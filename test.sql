@@ -54,21 +54,25 @@ select  k1.county_name,k1.a,k1.b,k1.c,k1.d,k1.e,k2.fz,
         case when k1.a > k2.fz then k1.a-k2.fz else null end as ct,
         k1.a-k2.fz
 from
-(select county_name,sum(is_all) as a,sum(is_fk) as b ,
+(
+    select county_name,sum(is_all) as a,sum(is_fk) as b ,
         sum(fee_0) as c ,sum(fee_1) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e
-from temp_hlw_operation_calss_special_privi_xiao p
-where p.is_all =1 
-group by county_name) k1
+    from temp_hlw_operation_calss_special_privi_xiao p
+    where p.is_all =1 
+    group by county_name 
+) k1
 left join
 (
-select county_name,count(product_no)*0.00065/30*31 as fz
-from cqbassdb.dw_product_outetype_dt_20220430 a
-left join cqbassdb.dim_pub_county_new b on a.county_id=b.county_id
-where a.active=1 and substr(a.gra_product_attr_id1,5,1)=1
-group by county_name
+    select county_name,count(product_no)*0.00065/30*31 as fz
+    from cqbassdb.dw_product_outetype_dt_20220430 a
+    left join cqbassdb.dim_pub_county_new b on a.county_id=b.county_id
+    where a.active=1 and substr(a.gra_product_attr_id1,5,1)=1
+    group by county_name
 ) k2 on  k1.county_name= k2.county_name
-
-
+union all 
+(
+    select 
+)
 
 
 
