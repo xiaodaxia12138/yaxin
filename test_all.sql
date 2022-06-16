@@ -41,7 +41,7 @@ where p.is_all =1
 -- 1
 union all
 
-select '全量特殊权限-异网主卡',
+select '全量特殊权限-异网主卡客户',
         case when county_name in ('南岸','渝中') then '城一'
              when county_name in ('渝北','江北','两江新区') then '城二'
              when county_name in ('沙坪坝','大渡口','九龙坡') then '城三' 
@@ -58,7 +58,7 @@ select '全量特殊权限-异网主卡',
                   else county_name
             end 
 union all
-select '全量特殊权限-异网主卡','合计',sum(is_all) as a,sum(is_fk) as b ,
+select '全量特殊权限-异网主卡客户','合计',sum(is_all) as a,sum(is_fk) as b ,
         sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
         null as f,null as g
 from temp_hlw_operation_calss_special_privi_xiao p
@@ -66,7 +66,7 @@ where p.is_all =1 and p.is_ywzk=1
 -- 2
 union all
 
-select '全量特殊权限-易携转重度',
+select '全量特殊权限-易携转重度客户',
         case when county_name in ('南岸','渝中') then '城一'
              when county_name in ('渝北','江北','两江新区') then '城二'
              when county_name in ('沙坪坝','大渡口','九龙坡') then '城三' 
@@ -83,7 +83,7 @@ select '全量特殊权限-易携转重度',
                   else county_name
             end 
 union all
-select '全量特殊权限客户-易携转重度','合计',sum(is_all) as a,sum(is_fk) as b ,
+select '全量特殊权限-易携转重度客户','合计',sum(is_all) as a,sum(is_fk) as b ,
         sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
         null as f,null as g
 from temp_hlw_operation_calss_special_privi_xiao p
@@ -91,7 +91,7 @@ where p.is_all =1 and p.is_yzx=1
 -- 3
 union all
 
-select  '全量特殊权限客户-其他客户',
+select  '全量特殊权限-其他客户',
         k1.name,
         k1.a,k1.b,k1.c,k1.d,k1.e,
         case when k1.a > k2.fz then '是' else '否' end as is_ct,
@@ -131,7 +131,9 @@ left join
             end 
 ) k2 on  k1.name= k2.name
 union all 
-select '全量特殊权限-其他客户',p1.na,p1.a,p1.b,p1.c,p1.d,p1.e,null as f ,p1.m-fz as g
+select '全量特殊权限-其他客户',p1.na,p1.a,p1.b,p1.c,p1.d,p1.e,
+        case when p1.m> p2.fz then  '是' else '否' end as f ,
+        p1.m-p2.fz as g
 from
 (
     select '合计' as na,sum(p.is_all) as a,sum(p.is_fk) as b ,
@@ -176,7 +178,7 @@ where p.is_1yuan=1
 -- 5
 union all
 
-select '1元包-异网主卡',
+select '1元包-异网主卡客户',
         case when county_name in ('南岸','渝中') then '城一'
              when county_name in ('渝北','江北','两江新区') then '城二'
              when county_name in ('沙坪坝','大渡口','九龙坡') then '城三' 
@@ -193,7 +195,7 @@ select '1元包-异网主卡',
              else county_name
         end 
 union all
-select '1元包-异网主卡','合计',sum(is_all) as a,sum(is_fk) as b ,
+select '1元包-异网主卡客户','合计',sum(is_all) as a,sum(is_fk) as b ,
         sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
         null as f,null as g
 from temp_hlw_operation_calss_special_privi_xiao p
