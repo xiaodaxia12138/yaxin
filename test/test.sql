@@ -1,11 +1,12 @@
+select count(1),count(distinct product_no) from temp_hlw_operation_calss_special_privi_xiao;
 drop table temp_hlw_operation_calss_special_privi_xiao;
 create table temp_hlw_operation_calss_special_privi_xiao as
-select  t1.product_no,t1.county_name,
+select  distinct t1.product_no,t1.county_name,
         t7.is_all,t7.is_1yuan,t7.is_1yuanheyue,t7.is_tczk,
         case when t2.product_no is not null then 1 else 0 end as is_ywzk, 
         case when t3.product_no is not null then 1 else 0 end as is_yzx,
         case when t2.product_no is null and t3.product_no is null then 1 else 0 end as is_qt,
-        case when t4.product_no is not null then 1 else 0 end as is_fk,
+        case when t4.z_product_no is not null then 1 else 0 end as is_fk,
         t5.priv_fee as fee_0,
         t6.priv_fee as fee_1
 from
@@ -50,6 +51,7 @@ left join
     from cqbassdb.dw_user_priv_value_info_dt_20220531
 ) t6 on t1.product_no=t6.product_no
 left join temp_operation_calss_special_privi_all t7 on t1.product_no=t7.product_no
+where t7.is_all =1
 ;
 
 

@@ -23,20 +23,20 @@ select '全量特殊权限-合计',
              else county_name
         end ,
         sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-    from temp_hlw_operation_calss_special_privi_xiao p
-    where p.is_all =1 
-    group by case when county_name in ('南岸','渝中') then '城一'
-                  when county_name in ('渝北','江北','两江新区') then '城二'
-                  when county_name in ('沙坪坝','大渡口','九龙坡') then '城三' 
-                  else county_name
-            end 
+from temp_hlw_operation_calss_special_privi_xiao2 p
+where p.is_all =1 
+group by case when county_name in ('南岸','渝中') then '城一'
+                when county_name in ('渝北','江北','两江新区') then '城二'
+                when county_name in ('沙坪坝','大渡口','九龙坡') then '城三' 
+                else county_name
+        end 
 union all
-select '全量特殊权限-合计','合计',sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+select '全量特殊权限-合计','全市',sum(is_all) as a,sum(is_fk) as b ,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-from temp_hlw_operation_calss_special_privi_xiao p
+from temp_hlw_operation_calss_special_privi_xiao2 p
 where p.is_all =1 
 -- 1
 union all
@@ -48,20 +48,20 @@ select '全量特殊权限-异网主卡客户',
              else county_name
         end ,
         sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-    from temp_hlw_operation_calss_special_privi_xiao p
-    where p.is_all =1 and p.is_ywzk=1 
-    group by case when county_name in ('南岸','渝中') then '城一'
+from temp_hlw_operation_calss_special_privi_xiao2 p
+where p.is_all =1 and p.is_ywzk=1 
+group by case when county_name in ('南岸','渝中') then '城一'
                   when county_name in ('渝北','江北','两江新区') then '城二'
                   when county_name in ('沙坪坝','大渡口','九龙坡') then '城三' 
                   else county_name
             end 
 union all
-select '全量特殊权限-异网主卡客户','合计',sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+select '全量特殊权限-异网主卡客户','全市',sum(is_all) as a,sum(is_fk) as b ,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-from temp_hlw_operation_calss_special_privi_xiao p
+from temp_hlw_operation_calss_special_privi_xiao2 p
 where p.is_all =1 and p.is_ywzk=1 
 -- 2
 union all
@@ -73,20 +73,20 @@ select '全量特殊权限-易携转重度客户',
              else county_name
         end ,
         sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-    from temp_hlw_operation_calss_special_privi_xiao p
-    where p.is_all =1 and p.is_yzx=1 
-    group by case when county_name in ('南岸','渝中') then '城一'
+from temp_hlw_operation_calss_special_privi_xiao2 p
+where p.is_all =1 and p.is_yzx=1 
+group by case when county_name in ('南岸','渝中') then '城一'
                   when county_name in ('渝北','江北','两江新区') then '城二'
                   when county_name in ('沙坪坝','大渡口','九龙坡') then '城三' 
                   else county_name
             end 
 union all
-select '全量特殊权限-易携转重度客户','合计',sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+select '全量特殊权限-易携转重度客户','全市',sum(is_all) as a,sum(is_fk) as b ,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-from temp_hlw_operation_calss_special_privi_xiao p
+from temp_hlw_operation_calss_special_privi_xiao2 p
 where p.is_all =1 and p.is_yzx=1 
 -- 3
 union all
@@ -104,8 +104,8 @@ from
              else p.county_name
             end as name,
         sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e
-    from temp_hlw_operation_calss_special_privi_xiao p
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e
+    from temp_hlw_operation_calss_special_privi_xiao2 p
     where p.is_all =1 and p.is_qt =1
     group by case when p.county_name in ('南岸','渝中') then '城一'
              when p.county_name in ('渝北','江北','两江新区') then '城二'
@@ -136,15 +136,16 @@ select '全量特殊权限-其他客户',p1.na,p1.a,p1.b,p1.c,p1.d,p1.e,
         p1.m-p2.fz as g
 from
 (
-    select '合计' as na,sum(p.is_all) as a,sum(p.is_fk) as b ,
-        sum(p.fee_0) as c ,sum(p.fee_0) as d,(sum(p.fee_1)-sum(p.fee_0))/sum(p.is_all) as e,
+    select '全市' as na,sum(p.is_all) as a,sum(p.is_fk) as b ,
+        sum(p.fee_0)/count(distinct p.product_no) as c ,sum(p.fee_1)/count(distinct p.product_no) as d,
+        (sum(p.fee_1)-sum(p.fee_0))/count(distinct p.product_no) as e,
         sum(p.is_all) as m
-    from temp_hlw_operation_calss_special_privi_xiao p
+     from temp_hlw_operation_calss_special_privi_xiao2 p
 where p.is_all =1 and p.is_qt=1
 ) p1
 left join 
 (
-    select '合计' as na ,count(distinct product_no)*0.00065/30*31 as fz
+    select '全市' as na ,count(distinct product_no)*0.00065/30*31 as fz
     from cqbassdb.dw_product_outetype_dt_20220430 a
     left join cqbassdb.dim_pub_county_new b on a.county_id=b.county_id
     where a.active=1 and substr(a.gra_product_attr_id1,5,1)=1
@@ -160,9 +161,9 @@ select '1元包-合计',
              else county_name
         end,
         sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-    from temp_hlw_operation_calss_special_privi_xiao p
+    from temp_hlw_operation_calss_special_privi_xiao2 p
     where p.is_1yuan=1
     group by case when county_name in ('南岸','渝中') then '城一'
              when county_name in ('渝北','江北','两江新区') then '城二'
@@ -170,10 +171,10 @@ select '1元包-合计',
              else county_name
         end 
 union all
-select '1元包-合计','合计',sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+select '1元包-合计','全市',sum(is_all) as a,sum(is_fk) as b ,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-from temp_hlw_operation_calss_special_privi_xiao p
+from temp_hlw_operation_calss_special_privi_xiao2 p
 where p.is_1yuan=1
 -- 5
 union all
@@ -185,9 +186,9 @@ select '1元包-异网主卡客户',
              else county_name
         end,
         sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-    from temp_hlw_operation_calss_special_privi_xiao p
+    from temp_hlw_operation_calss_special_privi_xiao2 p
     where  p.is_1yuan=1 and  p.is_ywzk=1
     group by case when county_name in ('南岸','渝中') then '城一'
              when county_name in ('渝北','江北','两江新区') then '城二'
@@ -195,10 +196,10 @@ select '1元包-异网主卡客户',
              else county_name
         end 
 union all
-select '1元包-异网主卡客户','合计',sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+select '1元包-异网主卡客户','全市',sum(is_all) as a,sum(is_fk) as b ,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-from temp_hlw_operation_calss_special_privi_xiao p
+from temp_hlw_operation_calss_special_privi_xiao2 p
 where p.is_1yuan=1 and  p.is_ywzk=1
 -- 6
 union all
@@ -210,9 +211,9 @@ select '1元包-易携转重度客户',
              else county_name
         end,
         sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-    from temp_hlw_operation_calss_special_privi_xiao p
+    from temp_hlw_operation_calss_special_privi_xiao2 p
     where  p.is_1yuan=1 and  p.is_yzx=1
     group by case when county_name in ('南岸','渝中') then '城一'
              when county_name in ('渝北','江北','两江新区') then '城二'
@@ -220,10 +221,10 @@ select '1元包-易携转重度客户',
              else county_name
         end 
 union all
-select '1元包-易携转重度客户','合计',sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+select '1元包-易携转重度客户','全市',sum(is_all) as a,sum(is_fk) as b ,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-from temp_hlw_operation_calss_special_privi_xiao p
+from temp_hlw_operation_calss_special_privi_xiao2 p
 where p.is_1yuan=1 and  p.is_yzx=1
 -- 7
 union all
@@ -235,9 +236,9 @@ select '1元包-其他客户',
              else county_name
         end,
         sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-    from temp_hlw_operation_calss_special_privi_xiao p
+    from temp_hlw_operation_calss_special_privi_xiao2 p
     where  p.is_1yuan=1 and  p.is_qt=1
     group by case when county_name in ('南岸','渝中') then '城一'
              when county_name in ('渝北','江北','两江新区') then '城二'
@@ -245,10 +246,10 @@ select '1元包-其他客户',
              else county_name
         end 
 union all
-select '1元包-其他客户','合计',sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+select '1元包-其他客户','全市',sum(is_all) as a,sum(is_fk) as b ,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-from temp_hlw_operation_calss_special_privi_xiao p
+from temp_hlw_operation_calss_special_privi_xiao2 p
 where p.is_1yuan=1 and  p.is_qt=1;
 -- 8
 insert into temp_hlw_operation_calss_special_privi_shuchu
@@ -260,9 +261,9 @@ select '1元包(合约版)-合计',
              else county_name
         end,
         sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-    from temp_hlw_operation_calss_special_privi_xiao p
+    from temp_hlw_operation_calss_special_privi_xiao2 p
     where  p.is_1yuanheyue=1 
     group by case when county_name in ('南岸','渝中') then '城一'
              when county_name in ('渝北','江北','两江新区') then '城二'
@@ -270,10 +271,10 @@ select '1元包(合约版)-合计',
              else county_name
         end 
 union all
-select '1元包(合约版)-合计','合计',sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+select '1元包(合约版)-合计','全市',sum(is_all) as a,sum(is_fk) as b ,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-from temp_hlw_operation_calss_special_privi_xiao p
+from temp_hlw_operation_calss_special_privi_xiao2 p
 where p.is_1yuanheyue=1
 -- 9
 union all
@@ -285,9 +286,9 @@ select '1元包(合约版)-异网主卡客户',
              else county_name
         end,
         sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-    from temp_hlw_operation_calss_special_privi_xiao p
+    from temp_hlw_operation_calss_special_privi_xiao2 p
     where  p.is_1yuanheyue=1 and p.is_ywzk=1
     group by case when county_name in ('南岸','渝中') then '城一'
              when county_name in ('渝北','江北','两江新区') then '城二'
@@ -295,10 +296,10 @@ select '1元包(合约版)-异网主卡客户',
              else county_name
         end 
 union all
-select '1元包(合约版)-异网主卡客户','合计',sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+select '1元包(合约版)-异网主卡客户','全市',sum(is_all) as a,sum(is_fk) as b ,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-from temp_hlw_operation_calss_special_privi_xiao p
+from temp_hlw_operation_calss_special_privi_xiao2 p
 where p.is_1yuanheyue=1 and p.is_ywzk=1
 -- 10
 union all
@@ -310,9 +311,9 @@ select '1元包(合约版)-易携转重度客户',
              else county_name
         end,
         sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-    from temp_hlw_operation_calss_special_privi_xiao p
+    from temp_hlw_operation_calss_special_privi_xiao2 p
     where  p.is_1yuanheyue=1 and p.is_yzx=1
     group by case when county_name in ('南岸','渝中') then '城一'
              when county_name in ('渝北','江北','两江新区') then '城二'
@@ -320,10 +321,10 @@ select '1元包(合约版)-易携转重度客户',
              else county_name
         end 
 union all
-select '1元包(合约版)-易携转重度客户','合计',sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+select '1元包(合约版)-易携转重度客户','全市',sum(is_all) as a,sum(is_fk) as b ,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-from temp_hlw_operation_calss_special_privi_xiao p
+from temp_hlw_operation_calss_special_privi_xiao2 p
 where p.is_1yuanheyue=1 and p.is_yzx=1
 -- 11
 union all
@@ -335,9 +336,9 @@ select '1元包(合约版)-其他客户',
              else county_name
         end,
         sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-    from temp_hlw_operation_calss_special_privi_xiao p
+    from temp_hlw_operation_calss_special_privi_xiao2 p
     where  p.is_1yuanheyue=1 and p.is_qt=1
     group by case when county_name in ('南岸','渝中') then '城一'
              when county_name in ('渝北','江北','两江新区') then '城二'
@@ -345,10 +346,10 @@ select '1元包(合约版)-其他客户',
              else county_name
         end 
 union all
-select '1元包(合约版)-其他客户','合计',sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+select '1元包(合约版)-其他客户','全市',sum(is_all) as a,sum(is_fk) as b ,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-from temp_hlw_operation_calss_special_privi_xiao p
+from temp_hlw_operation_calss_special_privi_xiao2 p
 where p.is_1yuanheyue=1 and p.is_qt=1;
 -- 12
 insert into temp_hlw_operation_calss_special_privi_shuchu
@@ -360,9 +361,9 @@ select '套餐折扣-合计',
              else county_name
         end,
         sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-    from temp_hlw_operation_calss_special_privi_xiao p
+    from temp_hlw_operation_calss_special_privi_xiao2 p
     where  p.is_tczk=1 
     group by case when county_name in ('南岸','渝中') then '城一'
              when county_name in ('渝北','江北','两江新区') then '城二'
@@ -370,10 +371,10 @@ select '套餐折扣-合计',
              else county_name
         end 
 union all
-select '套餐折扣-合计','合计',sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+select '套餐折扣-合计','全市',sum(is_all) as a,sum(is_fk) as b ,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-from temp_hlw_operation_calss_special_privi_xiao p
+from temp_hlw_operation_calss_special_privi_xiao2 p
 where p.is_tczk
 -- 13
 union all
@@ -385,9 +386,9 @@ select '套餐折扣-异网主卡客户',
              else county_name
         end,
         sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-    from temp_hlw_operation_calss_special_privi_xiao p
+    from temp_hlw_operation_calss_special_privi_xiao2 p
     where  p.is_tczk=1 and p.is_ywzk=1
     group by case when county_name in ('南岸','渝中') then '城一'
              when county_name in ('渝北','江北','两江新区') then '城二'
@@ -395,10 +396,10 @@ select '套餐折扣-异网主卡客户',
              else county_name
         end 
 union all
-select '套餐折扣-异网主卡客户','合计',sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+select '套餐折扣-异网主卡客户','全市',sum(is_all) as a,sum(is_fk) as b ,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-from temp_hlw_operation_calss_special_privi_xiao p
+from temp_hlw_operation_calss_special_privi_xiao2 p
 where p.is_tczk and p.is_ywzk=1
 -- 14
 union all
@@ -410,9 +411,9 @@ select '套餐折扣-易携转重度客户',
              else county_name
         end,
         sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-    from temp_hlw_operation_calss_special_privi_xiao p
+    from temp_hlw_operation_calss_special_privi_xiao2 p
     where  p.is_tczk=1 and p.is_yzx=1
     group by case when county_name in ('南岸','渝中') then '城一'
              when county_name in ('渝北','江北','两江新区') then '城二'
@@ -420,10 +421,10 @@ select '套餐折扣-易携转重度客户',
              else county_name
         end 
 union all
-select '套餐折扣-易携转重度客户','合计',sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+select '套餐折扣-易携转重度客户','全市',sum(is_all) as a,sum(is_fk) as b ,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-from temp_hlw_operation_calss_special_privi_xiao p
+from temp_hlw_operation_calss_special_privi_xiao2 p
 where p.is_tczk and p.is_yzx=1
 -- 15
 union all
@@ -435,9 +436,9 @@ select '套餐折扣-其他客户',
              else county_name
         end,
         sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-    from temp_hlw_operation_calss_special_privi_xiao p
+    from temp_hlw_operation_calss_special_privi_xiao2 p
     where  p.is_tczk=1 and p.is_qt=1
     group by case when county_name in ('南岸','渝中') then '城一'
              when county_name in ('渝北','江北','两江新区') then '城二'
@@ -445,10 +446,10 @@ select '套餐折扣-其他客户',
              else county_name
         end 
 union all
-select '套餐折扣-其他客户','合计',sum(is_all) as a,sum(is_fk) as b ,
-        sum(fee_0) as c ,sum(fee_0) as d,(sum(fee_1)-sum(fee_0))/sum(is_all) as e,
+select '套餐折扣-其他客户','全市',sum(is_all) as a,sum(is_fk) as b ,
+        sum(fee_0)/count(distinct product_no) as c ,sum(fee_1)/count(distinct product_no) as d,(sum(fee_1)-sum(fee_0))/count(distinct product_no) as e,
         null as f,null as g
-from temp_hlw_operation_calss_special_privi_xiao p
+from temp_hlw_operation_calss_special_privi_xiao2 p
 where p.is_tczk and p.is_qt=1
 -- 16
 ;
