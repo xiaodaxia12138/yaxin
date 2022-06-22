@@ -7,15 +7,15 @@ from bs4 import BeautifulSoup
 
 
 def main():
-    baseurl ="https://movie.douban.com/top250?start=/"
+    baseurl ="http://cq.chinaunicombidding.cn/jsp/cnceb/web/index_parent.jsp"
 
     datelist = getDate(baseurl)
-    savepath=".\\douban.xls"
+    savepath=".\\联通.xls"
     saveDate(datelist,savepath)
 
     # askURL("https://movie.douban.com/")
 
-findlink = re.compile(r'<a href="(.*?)">')
+findlink = re.compile(r'<a href="(.*?)">')          
 findimg = re.compile(r'<img.*src="(.*?)"',re.S)
 findtitle = re.compile(r'<span class="title">(.*)</span')
 findrating = re.compile(r'<span class="rating_num" property="v:average">(.*)</span')
