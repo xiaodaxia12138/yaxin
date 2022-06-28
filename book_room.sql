@@ -32,7 +32,7 @@ from
             case when t6.user_id is not null then 1 else 0 end as is_dy68,
             case when t7.user_id is not null then 1 else 0 end as is_18_68,
             case when t8.user_id is not null then 1 else 0 end as is_xy18,
-            case when t9.product_no is not null then 1 else 0 end as is_fk
+            case when t9.product_no is not null then 1 else 0 end as is_f   
     from cqbassdb.dw_product_outetype_dt_20211031 t1 
     left join cqbassdb.dw_user_useage_privilege_dt_20211031 t2 on t1.product_no=t2.product_no
     left join
@@ -87,3 +87,75 @@ group by case when a.is_xy=1 then xy
             when a.is_fk=1 then fka.
         end 
 ;
+
+
+select
+from temp_hlw_5g_sale_map_info_01 t1
+left join 
+(
+    select user_id,telnum as product_no from cqbassdb.dw_5g_privilege_user_dt_20211031 where typename in ('5G叠加包','5G套餐')
+) t2 t1.user_id=t2.user_id
+left join 
+(   
+    select product_no
+    from  cqbassdb.dw_user_useage_privilege_dt_20211031
+    where privsetid in ('gl_zq_vip_nodisturb','gl_zq_svip_nodisturb','gl_wh_nodisturb','gl_wapbxl_nodisturb','gl_tsmg_nodisturb','gl_qt_nodisturb','gl_qf_nodisturb'
+    'gl_ctcxs4','gl_11yhg28','gl_1yhg2019_hl','gl_1yhg2019_t','gl_1yhgn2019_t','gl_1yhgn2019_b',
+    'gl_1yhgn2019_a','gl_1yhgn2019_c','gl_1yhg2019_gn','gl_1yhg2019_g','gl_1yhg2019_f',
+    'gl_1yhg2019_c','gl_1yhg2019_a','gl_1yhg2019_b','gl_1yhg2019_d','gl_1yhg2019_e',
+    'pip_oth_1yqyscb1','pip_oth_1yqyscb2','pip_oth_1yqyscb3','pip_oth_1yqyscb4','pip_oth_1yqyscb5','pip_oth_1yqyscb6',
+    'gl_4gbdxrw_40','gl_4gbdxrw_60','gl_4gbdxrwhc_40','gl_4gbdxrwhc_60','gl_4gqgbxl98','gl_4gqgbxl98_clzx','gl_4gqgbxl98_clzxa','gl_4gqgbxl98_clzxb','gl_bxl_yh10','gl_bxl_yh10g',
+    'gl_bxl_yh20','gl_bxl_yh20g','gl_bxl_yh30','gl_bxl_yh30g','gl_bxl_yh40','gl_bxl_yh40g','gl_bxl_yh50','gl_bxl_yh50g','gl_bxl_yh60','gl_bxl_yh60g',
+    'gl_bxl_yh70','gl_bxl_yh70g','gl_bxl_yh80','gl_bxl_yh80g','gl_bxl_yhn10','gl_bxl_yhn20','gl_free3tc_2018e','gl_grbxl_yh10g','gl_grbxl_yh20g','gl_grbxl_yh30g',
+    'gl_sharenew38_clzx','gl_zqxkh_10y','gl_zqxkh_20y','gl_zqxkh_30y','gl_zqxkh_40y','gl_zqxkh_50y','gl_zqxkh_60y','gl_zqxkh_70y','gl_zqxkh_80y','gl_zqxkhcy_10y',
+    'gl_zqxkhcy_20y','gl_zqxkhcy_30y','gl_zqxkhcy_40y','gl_zqxkhcy_50y','gl_zqxkhcy_60y','gl_zqxkhcy_70y','gl_zqxkhcy_80y','pip_fee_qgbxl60','pip_fee_qgbxl60_2','gl_fptc3zg_2018','gl_4gbdxrw_60','gl_4gbdxrwhc_60'
+) t3 on t1.product_no=t3.product_no
+left join
+(
+    select distinct a.user_id,a.product_no
+    from cqbassdb.dw_user_imei_dt_20211031 a
+    inner join cqbassdb.dim_pub_5g_terminfo_tac b on a.tac=b.tac
+
+    union all
+
+    select distinct a.user_id,a.product_no 
+    from cqbassdb.dw_user_imei_dt_20211031 a
+    left join cqbassdb.dim_pub_all_terminfo_tac b on a.tac=b.tac
+    where  n09  in ('1','6','7','9') 
+) t4 on t1.product_no=t4.product_no
+left join
+(
+    select distinct user_id from cqbassdb.DW_ZZQS_USER_LLGX_DT_20211124
+    union  all
+    select distinct user_id1 as user_id from cqbassdb.DW_ZZQS_USER_LLGX_DT_20211124
+    where  is_llgx=1 
+    union all
+    select distinct user_id2 as user_id from cqbassdb.DW_ZZQS_USER_LLGX_DT_20211124
+) t5 on t1.user_id=t5.user_id
+left join 
+(
+    select product_no
+    from cqbassdb.dw_zzqs_user_conn_qianyue_dt_20211031
+    where age >= 60
+) t6 on t1.product_no=t6.product_no
+left join 
+(
+    select product_no
+    from cqbassdb.cqbassdb.dw_user_charges_useage_mm_202109
+    where age >= 60  ---A
+) t7 on t1.product_no=t7.product_no
+left join 
+(
+    select product_no
+    from cqbassdb.dwb_imei_double_card_main_type_dt_20210831 
+    where product_no is not null and card_type in ('移动移动','电信移动','联通移动')
+) t8 on t1.product_no=t8.product_no
+left join
+(
+    select product_no 
+    from cqbassdb.dw_zzqs_5g_tb_detail_dt_20211031
+    where userstatus_name not in ('临时生成资料','临时资料交费开机','回退') 
+    and (enddate>='2021-11-01' or enddate is null) 
+    and operate_date between '2021-10-01' and '2021-10-31' 
+    and priv_type not in ('副卡','升舱包')
+) t9 on t1.product_no=t9.product_no
