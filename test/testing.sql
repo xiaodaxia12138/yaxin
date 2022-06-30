@@ -4,15 +4,15 @@ create table temp_hlw_5g_tb_sale_map_info_01
     user_id varchar(100),
     product_no varchar(100),
     privsetid varchar(100),
-    is_xy int,
-    is_bxl int,
-    is_5gzd int,
-    is_jt int,
-    is_qyrh int,
-    is_dy68 int,
-    is_18_68 int,
-    is_xy18 int,
-    is_fk int
+    is_xy int,       -- 是否校园
+    is_bxl int,     -- 是否不限量   
+    is_5gzd int,     -- 是否5G终端
+    is_jt int,     -- 是否家庭
+    is_qyrh int,     -- 是否权益融合
+    is_dy68 int,     -- 是否套餐68以上
+    is_18_68 int,     -- 是否套餐18-68
+    is_xy18 int,     -- 是否套餐18以下
+    is_fk int     -- 是否副卡
 ) distributed by ('user_id');
 
 
@@ -41,7 +41,7 @@ left join
     'pip_main_qck39','pip_main_qck39n','pip_main_qck59','pip_main_qck59n','pip_main_jlk29','pip_main_jlk39','pip_main_5gdg59','pip_main_5gdg79','pip_main_5gdg99'
     ) 
     and  nvl(enddate,'2050-01-01') >'2022-05-31' and enddate is null
-) t2 on t1.user_id=t2.user_id
+) t2 on t1.user_id=t2.user_id           
 left join 
 (
     select distinct user_id
@@ -70,14 +70,17 @@ left join
     select distinct product_no 
     from 
     (
-        select  case when sum(totalbytes) >= 1040*10 then msisdn end as product_no
+        select msisdn as product_no
         from cqbassdb.dw_gprs_app_bh_dt_20220531
         where subtypename in ('优酷','腾讯视频','爱奇艺视频')
-        group by msisdn
+        group by msisdn,subtypename
+        having sum(totalbytes) >=10*1040
         union all 
         select msisdn as product_no
         from cqbassdb.dw_gprs_app_bh_dt_20220531
-        where subtypename in ('优酷','腾讯视频','爱奇艺视频') and usedays >= 15
+        where subtypename in ('优酷','腾讯视频','爱奇艺视频') 
+        group by msisdn,subtypename
+        having sum(usedays) >=15
     ) a 
 ) t5 on t1.product_no=t5.product_no             -- 权益融合
 left join
@@ -97,7 +100,7 @@ left join
     select distinct product_no
     from cqbassdb.dw_zzqs_user_sxk_detail_dt_20220531 
     where is_zk_priv='否'
-) t9 on t1.product_no=t9.product_no
+) t9 on t1.product_no=t9.product_no           -- 副卡
 where t1.active=1 and substr(t1.gra_product_attr_id1,5,1)=1
 ;
 
@@ -106,10 +109,10 @@ create table temp_hlw_5g_tb_sale_map_info_02
 (
     user_id varchar(100),
     product_no varchar(100),
-    tb_cnt int,
-    dtb_cnt int,
-    is_yyx int ,
-    is_5gdd int 
+    tb_cnt int,       -- 5G套包办理
+    dtb_cnt int,      -- 5G叠加包办理
+    is_yyx int ,      -- 是否易营销
+    is_5gdd int       -- 是否5G到达
 ) distributed by ('user_id');
 
 insert into temp_hlw_5g_tb_sale_map_info_02
@@ -223,37 +226,54 @@ where t1.active=1 and substr(t1.gra_product_attr_id1,5,1)=1
 ;
 -- 插入非副卡分类
 drop table temp_hlw_5g_tb_sale_map_info_03;
-create table temp_hlw_5g_tb_sale_map_info_03 as
-select  case when t1.is_xy=1 then 'xy'
-            when t1.is_xy=0 and t1.is_bxl=1 then 'bxl'
-            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=1 then '5gzd'
-            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=0 and t1.is_jt=1 then 'jt'
-            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=0 and t1.is_jt=0 and t1.is_qyrh=1 then 'qyrh'
-            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=0 and t1.is_jt=0 and t1.is_qyrh=0 and t1.is_dy68=1 then 'dy68' 
-            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=0 and t1.is_jt=0 and t1.is_qyrh=0 and t1.is_dy68=0 and t1.is_18_68=1 then '18_68'
-            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=0 and t1.is_jt=0 and t1.is_qyrh=0 and t1.is_dy68=0 and t1.is_18_68=0 and t1.is_xy18=1 then 'xy18'
-            when t1.is_fk=1 then 'fk'
+create table temp_hlw_5g_tb_sale_map_info_03(
+    class_tc varchar(20),     -- 套餐分类
+    value1 int,    -- 通信用户
+    value2 int,    -- 5G到达
+    value3 decimal(20,4),    -- 5G套包渗透率
+    value4 int,    -- 其中易营销客户
+    value5 int,    -- 其中易营销客户5G到达
+    value6 int,    -- 其中易营销客户5G叠加包办理
+    value7 int,    -- 其中拍照客户
+    value8 int,    -- 拍照客户中易营销
+    value9 int,    -- 拍照客户5G到达
+    value10  int,    -- 拍照客户中易营销客户5G到达
+    value11  decimal(20,4),    -- 拍照客户5G套包渗透率
+    value12  int,    -- 新增客户
+    value13  int,    -- 新增客户5G到达
+    value14  decimal(20,4)    -- 新增客户5G套包渗透率
+) distributed by ('class_tc');
+
+insert into temp_hlw_5g_tb_sale_map_info_03 
+select  case when t1.is_xy=1 then '校园'
+            when t1.is_xy=0 and t1.is_bxl=1 then '不限量'
+            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=1 then '5G终端'
+            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=0 and t1.is_jt=1 then '家庭'
+            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=0 and t1.is_jt=0 and t1.is_qyrh=1 then '权益融合'
+            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=0 and t1.is_jt=0 and t1.is_qyrh=0 and t1.is_dy68=1 then '大于68' 
+            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=0 and t1.is_jt=0 and t1.is_qyrh=0 and t1.is_dy68=0 and t1.is_18_68=1 then '18-68之间'
+            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=0 and t1.is_jt=0 and t1.is_qyrh=0 and t1.is_dy68=0 and t1.is_18_68=0 and t1.is_xy18=1 then '小于18'
         end as class_tc,
         count(t2.user_id) as value1,
-        count(t2.tb_cnt) as value2,
+        sum(t2.is_5gdd) as value2,
         count(t2.tb_cnt)/count(t2.user_id)as value3,
-        count(case when t2.is_yyx=1 then t2.user_id end)as value4,
-        count(case when t2.is_yyx=1 and t2.dtb_cnt is not null then t2.user_id end)as value5,
-        sum(case when t2.is_yyx=1 and t2.dtb_cnt is not null then t2.dtb_cnt end)as value6,
+        sum(is_yyx) as value4,
+        sum(case when t2.is_yyx=1 then t2.is_5gdd end)as value5,
+        sum(case when t2.is_yyx=1 then t2.dtb_cnt end)as value6,
         count(t3.user_id)as value7,
-        count(case when t2.is_yyx=1 and t3.user_id is not null then t2.user_id end)as value8,
-        count(case when t3.user_id is not null then t2.tb_cnt end)as value9,
-        count(case when t2.is_yyx=1 and t3.user_id is not null then t2.tb_cnt end)as value10,
-        count(case when t3.user_id is not null then t2.tb_cnt end)/count(t3.user_id)as value11,
+        sum(case when t3.user_id is not null then t2.is_yyx end)as value8,
+        sum(case when t3.user_id is not null then t2.is_5gdd end)as value9,
+        sum(case when t2.is_yyx=1 and t3.user_id is not null then t2.is_5gdd end)as value10,
+        sum(case when t3.user_id is not null then t2.is_5gdd end)/count(t3.user_id)as value11,
         count(t4.user_id)as value12,
-        count(case when t4.user_id is not null then t2.tb_cnt end)as value13,
-        count(case when t4.user_id is not null then t2.tb_cnt end)/count(t4.user_id) as value14
+        sum(case when t4.user_id is not null then t2.is_5gdd end)as value13,
+        sum(case when t4.user_id is not null then t2.is_5gdd end)/count(t4.user_id) as value14
 from temp_hlw_5g_tb_sale_map_info_01 t1
 left join temp_hlw_5g_tb_sale_map_info_02 t2 on t1.user_id=t2.user_id
 left join 
 (
     select user_id
-    from cqbassdb.dw_product_outetype_dt_20201031
+    from cqbassdb.dw_product_outetype_dt_20210531
 )  t3 on t1.user_id=t3.user_id
 left join 
 (
@@ -261,15 +281,14 @@ left join
     from cqbassdb.dw_product_outetype_dt_20220531
     where active=1 and open_date >= '2022-01-01'
 )t4 on t1.user_id=t4.user_id
-group by case when t1.is_xy=1 then 'xy' 
-            when t1.is_xy=0 and t1.is_bxl=1 then 'bxl'
-            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=1 then '5gzd'
-            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=0 and t1.is_jt=1 then 'jt'
-            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=0 and t1.is_jt=0 and t1.is_qyrh=1 then 'qyrh'
-            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=0 and t1.is_jt=0 and t1.is_qyrh=0 and t1.is_dy68=1 then 'dy68' 
-            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=0 and t1.is_jt=0 and t1.is_qyrh=0 and t1.is_dy68=0 and t1.is_18_68=1 then '18_68'
-            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=0 and t1.is_jt=0 and t1.is_qyrh=0 and t1.is_dy68=0 and t1.is_18_68=0 and t1.is_xy18=1 then 'xy18'
-            when t1.is_fk=1 then 'fk'
+group by case when t1.is_xy=1 then '校园'
+            when t1.is_xy=0 and t1.is_bxl=1 then '不限量'
+            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=1 then '5G终端'
+            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=0 and t1.is_jt=1 then '家庭'
+            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=0 and t1.is_jt=0 and t1.is_qyrh=1 then '权益融合'
+            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=0 and t1.is_jt=0 and t1.is_qyrh=0 and t1.is_dy68=1 then '大于68' 
+            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=0 and t1.is_jt=0 and t1.is_qyrh=0 and t1.is_dy68=0 and t1.is_18_68=1 then '18-68之间'
+            when t1.is_xy=0 and t1.is_bxl=0 and t1.is_5gzd=0 and t1.is_jt=0 and t1.is_qyrh=0 and t1.is_dy68=0 and t1.is_18_68=0 and t1.is_xy18=1 then '小于18'
         end
 
 ;
@@ -277,25 +296,25 @@ group by case when t1.is_xy=1 then 'xy'
 insert into temp_hlw_5g_tb_sale_map_info_03
 select  '合计',
         count(t2.user_id) as value1,
-        count(t2.tb_cnt) as value2,
+        sum(t2.is_5gdd) as value2,
         count(t2.tb_cnt)/count(t2.user_id)as value3,
-        count(case when t2.is_yyx=1 then t2.user_id end)as value4,
-        count(case when t2.is_yyx=1 and t2.dtb_cnt is not null then t2.user_id end)as value5,
-        sum(case when t2.is_yyx=1 and t2.dtb_cnt is not null then t2.dtb_cnt end)as value6,
+        sum(is_yyx) as value4,
+        sum(case when t2.is_yyx=1 then t2.is_5gdd end)as value5,
+        sum(case when t2.is_yyx=1 then t2.dtb_cnt end)as value6,
         count(t3.user_id)as value7,
-        count(case when t2.is_yyx=1 and t3.user_id is not null then t2.user_id end)as value8,
-        count(case when t3.user_id is not null then t2.tb_cnt end)as value9,
-        count(case when t2.is_yyx=1 and t3.user_id is not null then t2.tb_cnt end)as value10,
-        count(case when t3.user_id is not null then t2.tb_cnt end)/count(t3.user_id)as value11,
+        sum(case when t3.user_id is not null then t2.is_yyx end)as value8,
+        sum(case when t3.user_id is not null then t2.is_5gdd end)as value9,
+        sum(case when t2.is_yyx=1 and t3.user_id is not null then t2.is_5gdd end)as value10,
+        sum(case when t3.user_id is not null then t2.is_5gdd end)/count(t3.user_id)as value11,
         count(t4.user_id)as value12,
-        count(case when t4.user_id is not null then t2.tb_cnt end)as value13,
-        count(case when t4.user_id is not null then t2.tb_cnt end)/count(t4.user_id) as value14
+        sum(case when t4.user_id is not null then t2.is_5gdd end)as value13,
+        sum(case when t4.user_id is not null then t2.is_5gdd end)/count(t4.user_id) as value14
 from temp_hlw_5g_tb_sale_map_info_01 t1
 left join temp_hlw_5g_tb_sale_map_info_02 t2 on t1.user_id=t2.user_id
 left join 
 (
     select user_id
-    from cqbassdb.dw_product_outetype_dt_20201031
+    from cqbassdb.dw_product_outetype_dt_20210531
 )  t3 on t1.user_id=t3.user_id
 left join 
 (
@@ -306,27 +325,27 @@ left join
 ;
 -- 插入副卡分类
 insert into temp_hlw_5g_tb_sale_map_info_03
-select  case when t1.is_fk=1 then 'fk' end as class_tc,
+select  case when t1.is_fk=1 then '副卡' end as class_tc,
         count(t2.user_id) as value1,
-        count(t2.tb_cnt) as value2,
+        sum(t2.is_5gdd) as value2,
         count(t2.tb_cnt)/count(t2.user_id)as value3,
-        count(case when t2.is_yyx=1 then t2.user_id end)as value4,
-        count(case when t2.is_yyx=1 and t2.dtb_cnt is not null then t2.user_id end)as value5,
-        sum(case when t2.is_yyx=1 and t2.dtb_cnt is not null then t2.dtb_cnt end)as value6,
+        sum(is_yyx) as value4,
+        sum(case when t2.is_yyx=1 then t2.is_5gdd end)as value5,
+        sum(case when t2.is_yyx=1 then t2.dtb_cnt end)as value6,
         count(t3.user_id)as value7,
-        count(case when t2.is_yyx=1 and t3.user_id is not null then t2.user_id end)as value8,
-        count(case when t3.user_id is not null then t2.tb_cnt end)as value9,
-        count(case when t2.is_yyx=1 and t3.user_id is not null then t2.tb_cnt end)as value10,
-        count(case when t3.user_id is not null then t2.tb_cnt end)/count(t3.user_id)as value11,
+        sum(case when t3.user_id is not null then t2.is_yyx end)as value8,
+        sum(case when t3.user_id is not null then t2.is_5gdd end)as value9,
+        sum(case when t2.is_yyx=1 and t3.user_id is not null then t2.is_5gdd end)as value10,
+        sum(case when t3.user_id is not null then t2.is_5gdd end)/count(t3.user_id)as value11,
         count(t4.user_id)as value12,
-        count(case when t4.user_id is not null then t2.tb_cnt end)as value13,
-        count(case when t4.user_id is not null then t2.tb_cnt end)/count(t4.user_id) as value14
+        sum(case when t4.user_id is not null then t2.is_5gdd end)as value13,
+        sum(case when t4.user_id is not null then t2.is_5gdd end)/count(t4.user_id) as value14
 from temp_hlw_5g_tb_sale_map_info_01 t1
 left join temp_hlw_5g_tb_sale_map_info_02 t2 on t1.user_id=t2.user_id
 left join 
 (
     select user_id
-    from cqbassdb.dw_product_outetype_dt_20201031
+    from cqbassdb.dw_product_outetype_dt_20210531
 )  t3 on t1.user_id=t3.user_id
 left join 
 (
@@ -335,11 +354,11 @@ left join
     where active=1 and open_date >= '2022-01-01'
 )t4 on t1.user_id=t4.user_id
 where t1.is_fk=1
-group by case when t1.is_fk=1 then 'fk' end
+group by case when t1.is_fk=1 then '副卡' end
 ;
 
 -- 输出表：
-select  class_tc
+select  class_tc,
         value1 ,
         value2 ,
         value3 ,
