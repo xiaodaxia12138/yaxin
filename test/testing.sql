@@ -85,15 +85,15 @@ left join
 ) t5 on t1.product_no=t5.product_no             -- 权益融合
 left join
 (
-    select user_id from cqbassdb.dw_user_nowuse_privilege_dt_20220531 where total_value >= 68
+    select distinct user_id from cqbassdb.dw_user_nowuse_privilege_dt_20220531 where total_value >= 68
 ) t6 on t1.user_id=t6.user_id              -- 大于68
 left join
 (
-    select user_id from cqbassdb.dw_user_nowuse_privilege_dt_20220531 where total_value between 18 and 68 
+    select distinct user_id from cqbassdb.dw_user_nowuse_privilege_dt_20220531 where total_value between 18 and 68 
 ) t7 on t1.user_id=t7.user_id     
 left join           -- 18-68
 (
-    select user_id,'1'  from cqbassdb.dw_user_nowuse_privilege_dt_20220531 where total_value <= 18
+    select distinct user_id,'1'  from cqbassdb.dw_user_nowuse_privilege_dt_20220531 where total_value <= 18
 ) t8 on t1.user_id=t8.user_id               -- 小于18
 left join 
 (
@@ -129,7 +129,7 @@ select t1.user_id,t1.product_no,
 from cqbassdb.dw_product_outetype_dt_20220531 t1
 left join 
 (
-    select user_id,count(1) as 5gtb_cnt from cqbassdb.dw_5g_privilege_user_dt_20220531 where typename in ('5G叠加包','5G套餐')
+    select distinct user_id,count(1) as 5gtb_cnt from cqbassdb.dw_5g_privilege_user_dt_20220531 where typename in ('5G叠加包','5G套餐')
     group by user_id
 ) t2 on t1.user_id=t2.user_id
 left join 
@@ -272,12 +272,12 @@ from temp_hlw_5g_tb_sale_map_info_01 t1
 left join temp_hlw_5g_tb_sale_map_info_02 t2 on t1.user_id=t2.user_id
 left join 
 (
-    select user_id
+    select distinct user_id
     from cqbassdb.dw_product_outetype_dt_20210531
 )  t3 on t1.user_id=t3.user_id
 left join 
 (
-    select user_id
+    select distinct user_id
     from cqbassdb.dw_product_outetype_dt_20220531
     where active=1 and open_date >= '2022-01-01'
 )t4 on t1.user_id=t4.user_id
@@ -313,12 +313,12 @@ from temp_hlw_5g_tb_sale_map_info_01 t1
 left join temp_hlw_5g_tb_sale_map_info_02 t2 on t1.user_id=t2.user_id
 left join 
 (
-    select user_id
+    select distinct user_id
     from cqbassdb.dw_product_outetype_dt_20210531
 )  t3 on t1.user_id=t3.user_id
 left join 
 (
-    select user_id
+    select distinct user_id
     from cqbassdb.dw_product_outetype_dt_20220531
     where active=1 and open_date >= '2022-01-01'
 )t4 on t1.user_id=t4.user_id
@@ -344,12 +344,12 @@ from temp_hlw_5g_tb_sale_map_info_01 t1
 left join temp_hlw_5g_tb_sale_map_info_02 t2 on t1.user_id=t2.user_id
 left join 
 (
-    select user_id
+    select distinct user_id
     from cqbassdb.dw_product_outetype_dt_20210531
 )  t3 on t1.user_id=t3.user_id
 left join 
 (
-    select user_id
+    select distinct user_id
     from cqbassdb.dw_product_outetype_dt_20220531
     where active=1 and open_date >= '2022-01-01'
 )t4 on t1.user_id=t4.user_id
@@ -362,7 +362,7 @@ select  class_tc,
         value1 ,
         value2 ,
         value3 ,
-        value2/max(value2) over (),
+        value2/max(value1) over (),
         value4 ,
         value5 ,
         value6 ,
@@ -371,9 +371,9 @@ select  class_tc,
         value9 ,
         value10 ,
         value11 ,
-        value9/max(value9) over () ,
+        value9/max(value7) over () ,
         value12 ,
         value13 ,
         value14 ,
-        value13/max(value13) over ()
+        value13/max(value12) over ()
 from temp_hlw_5g_tb_sale_map_info_03

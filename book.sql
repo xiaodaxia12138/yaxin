@@ -68,12 +68,12 @@ select substr(op_time,6,2) as month,op_time,'全市',
 drop table temp_hlw_monitor_income_county_name_20220402;
 create table temp_hlw_monitor_income_county_name_20220402 as
 select  t1.month,t1.op_time,t1.county_name,t1.cnt_1,t1.income_1,
-        case when substr(t1.op_time,10,1)=1 then t1.sum_1 else t1.sum_1+t4.sum_1 end as sum_1,
-        case when substr(t1.op_time,10,1)=1 then t1.sum_2 else t1.sum_2+t4.sum_2 end as sum_2,
-        case when substr(t1.op_time,10,1)=1 then t1.sum_1-t2.sum_1 else t1.sum_1+t4.sum_1- t2.sum_1 end as tongbi_1,
-        case when substr(t1.op_time,10,1)=1 then t1.sum_1-t2.sum_2 else t1.sum_2+t4.sum_2- t2.sum_2 end as tongbi_2,
-        case when substr(t1.op_time,10,1)=1 then t1.sum_1-t3.sum_1 else t1.sum_1+t4.sum_1- t3.sum_1 end as huanbi_1,
-        case when substr(t1.op_time,10,1)=1 then t1.sum_1-t3.sum_2 else t1.sum_2+t4.sum_2- t3.sum_2 end as huanbi_2
+        case when substr(t1.op_time,9,2)=01 then t1.sum_1 else t1.sum_1+t4.sum_1 end as sum_1,
+        case when substr(t1.op_time,9,2)=01 then t1.sum_2 else t1.sum_2+t4.sum_2 end as sum_2,
+        case when substr(t1.op_time,9,2)=01 then t1.sum_1-t2.sum_1 else t1.sum_1+t4.sum_1- t2.sum_1 end as tongbi_1,
+        case when substr(t1.op_time,9,2)=01 then t1.sum_1-t2.sum_2 else t1.sum_2+t4.sum_2- t2.sum_2 end as tongbi_2,
+        case when substr(t1.op_time,9,2)=01 then t1.sum_1-t3.sum_1 else t1.sum_1+t4.sum_1- t3.sum_1 end as huanbi_1,
+        case when substr(t1.op_time,9,2)=01 then t1.sum_1-t3.sum_2 else t1.sum_2+t4.sum_2- t3.sum_2 end as huanbi_2
         
 from temp_hlw_monitor_income_0_county_name_20220402 t1    -- 当天明细表
 left join temp_hlw_monitor_income_county_name_20210402 t2 on t1.county_name=t2.county_name   -- 同比中间表
@@ -86,8 +86,8 @@ left join temp_hlw_monitor_income_county_name_20210401 t4 on t1.county_name=t4.c
 drop table temp_hlw_monitor_income_county_name_20210401;
 create table temp_hlw_monitor_income_county_name_20210401 as
 select  t1.month,t1.op_time,t1.county_name,t1.cnt_1,t1.income_1,
-        case when substr(t1.op_time,10,1)=1 then t1.sum_1 else t1.sum_1+t4.sum_1 end as sum_1,
-        case when substr(t1.op_time,10,1)=1 then t1.sum_2 else t1.sum_2+t4.sum_2 end as sum_2,
+        case when substr(t1.op_time,9,2)=01 then t1.sum_1 else t1.sum_1+t4.sum_1 end as sum_1,
+        case when substr(t1.op_time,9,2)=01 then t1.sum_2 else t1.sum_2+t4.sum_2 end as sum_2,
         t1.sum_1-t2.sum_1 as tongbi_1 ,
         t1.sum_2-t2.sum_2 as tongbi_2 ,
         t1.sum_1-t3.sum_1 as huanbi_1 ,
