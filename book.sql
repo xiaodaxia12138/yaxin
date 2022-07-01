@@ -6,10 +6,10 @@ create table temp_hlw_monitor_income_kexuanbo_202204(
     type varchar(100),
     privsetid varchar(100),
     priv_name varchar(100),
-    price varchar(100),
+    price decimal(10,2),
     channel_type varchar(100),
     channel_type1 varchar(100)
-) distributed by ('privsetid');
+) distributed by ('price');
 
 
 -- 插入当月所需明细数据
@@ -103,9 +103,23 @@ left join
 ;
 
 select * from temp_hlw_monitor_income_kexuanbo_202204
--- 输出表1：
-select  month_id,op_time ,county_name ,
-        count(1),sum(price)
+-- 输出表1：2022-04-30
+select  '2022-04','2022-04-30' ,county_name ,
+        count(case when month_id='当月' and op_time='2022-04-30' then price end) as value1,
+        sum(case when month_id='当月' and op_time='2022-04-30' then price end) as value2,
+
+        count(case when month_id='当月' and op_time between '2022-04-01' and '2022-04-30' then price end) as value3,
+        count(case when month_id='当月' and op_time between '2022-04-01' and '2022-04-30' then price end)/ 
+        count(case when month_id='同比月' and op_time between '2021-04-01' and '2021-04-30' then price end)-1 as value4,
+        count(case when month_id='当月' and op_time between '2022-04-01' and '2022-04-30' then price end)/ 
+        count(case when month_id='环比月' and op_time between '2022-03-01' and '2021-03-31' then price end)-1 as value4,
+
+        sum(case when month_id='当月' and op_time between '2022-04-01' and '2022-04-30' then price end) as value5,
+        sum(case when month_id='当月' and op_time between '2022-04-01' and '2022-04-30' then price end)/ 
+        sum(case when month_id='同比月' and op_time between '2021-04-01' and '2021-04-30' then price end)-1 as value6,
+        sum(case when month_id='当月' and op_time between '2022-04-01' and '2022-04-30' then price end)/ 
+        sum(case when month_id='环比月' and op_time between '2022-03-01' and '2021-03-31' then price end)-1 as value7
+
         
 from temp_hlw_monitor_income_kexuanbo_202203
 group by month_id, op_time,county_name
