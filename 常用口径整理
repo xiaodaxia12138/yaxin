@@ -1,0 +1,1256 @@
+-- 查重代码
+select  count(1),count(distinct product_no)
+from HLW_DW_ZHIYEJUZHU_YYYYMM 
+where month_id=202206
+-- 查重明细
+select product_no,count(1)
+from HLW_DW_ZHIYEJUZHU_YYYYMM 
+where month_id=202206
+group by prodcut_no
+having count(1)>1
+-- 数据导入分发系统日期格式
+day_id = '${batchNo}' , month_id = '${batchNo?substring(0,6)}' ,year = '${batchNo?substring(0,4)}'
+
+-- 全量表
+cqbassdb.dw_zzqs_user_conn_qianyue_dt_yyyymmdd
+-- 宽带用户表
+cqbassdb.dw_znjf_cust_zhudinet_info_outside_dm_20220621
+
+-- 分局,网格,三级资费
+
+select distinct a.user_id,a.product_no,
+  b.dept_name,    -- 网格
+  c.area_name,    -- 分局
+  d.plan_name     -- 三级资费
+  e.county_name   -- 分公司
+from cqbassdb.dw_product_dt_20220621 a
+left join cqbassdb.dim_pub_dept_new b on a.dept_id=b.dept_id and b.active_flag=1
+left join cqbassdb.dim_pub_area_new c on b.area_id=c.area_id and c.active_flag=1
+left join cqbassdb.dim_cust_plan d on a.plan_id=d.plan_id and d.active_flag=1
+left join cqbassdb.dim_pub_county_new e on a.county_id=e.county_id
+where a.active=1
+
+-- 前三月折后arpu
+select avg_zk_arpu
+from cqbassdb.dw_user_arpu_mou_dou_mm_202205
+
+-- 魔百和(魔百盒)用户
+cqbassdb.DW_ZZQS_MBH_INNET_DETAIL_DT_20220621
+
+-- 签约
+cqbassdb.dw_user_useage_privilege_dt_20220621 a
+inner join cqbassdb.dim_pub_qianyue_2019 b on a.privsetid=b.itemid
+where (a.enddate>'2022-06-21' or a.enddate is null)
+
+-- 5G基站
+HLW_DW_ZHIYEJUZHU_202206
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- 自助取数的模块明细： 
+DW_ZZQS_TABLE_ATTR_YYYYMMDD
+
+-------查用户机龄
+select user_id,online_duration from default.DW_CUST_BASIC_INFO_FULL_DT_YYYYMMDD where day_id = '20181130'
+
+-------居住地
+hlw_dwd_area_move_rule_yyyymm
+
+
+-- 5G终端用户
+(
+  select a.user_id,imei
+  from 
+  (select user_id,tac,imei
+  from default.dw_user_imei_dt_yyyymmdd a
+  where day_id='20200519'
+  )a
+  inner join
+  (select tac 
+  from default.dim_pub_5g_terminfo_tac
+  )b on a.tac=b.tac
+  group by a.user_id,imei
+)b on a.user_id=b.user_id
+
+
+
+----漫游地区代码
+default.dim_pub_quhao
+
+
+---全球通
+select * from 
+default.DW_USER_QQT_VIP_DETAIL_DT_YYYYMMDD where day_id = '20191231'
+
+
+-- 随机取
+ORDER BY RAND() LIMIT 2000000
+
+
+-----离网用户
+default.DW_BASE_USER_OUTETYPE_OFFDETAIL_DM_YYYYMMDD
+
+
+---返回多个字段的最大,最下值
+1、最大值greatest
+select greatest(字段1,字段2,字段N) maxs from 表
+where a.条件= '条件值'
+
+2、最小值least
+select least(字段1,字段2,字段N) maxs from 表
+where a.条件= '条件值'
+
+
+ -----自助取数模块查询
+自助取数的模块明细： DW_ZZQS_TABLE_ATTR_YYYYMMDD
+
+select * from default.DW_ZZQS_TABLE_ATTR_YYYYMMDD where day_id = '20200504' and oper_table like '%ssssss%'
+
+
+ 自助取数使用日志： DW_ZZQS_USE_LOG_YYYYMMDD
+
+一、基础属性
+
+
+-----arpu
+select
+user_id,
+arpu,  --折前arpu
+zk_arpu, --折后arpu
+avg_arpu, --折前近3月平均arpu
+avg_zk_arpu --折后近3月平均arpu
+from default.DW_USER_ARPU_MOU_DOU_MM_YYYYMM a where a.month_id=201910
+
+
+------DOU(总流量)
+select
+user_id,
+DOU,  --dou
+avg_dou --近3月平均dou
+from default.DW_USER_ARPU_MOU_DOU_MM_YYYYMM a where a.month_id=201910
+
+
+------DOU(4G流量)
+select user_id,g4_allflow from default.DW_GPRS_USER_FLOW_DT_YYYYMMDD where day_id='20191031'
+
+
+------mou(总mou)用户通话费用
+select
+user_id,
+mou,  --mou
+avg_mou --近3月平均mou
+from default.DW_USER_ARPU_MOU_DOU_MM_YYYYMM a where a.month_id=201910
+
+
+------mou(主叫mou)
+ 
+select user_id,month_zj_mou from default.dw_user_call_detail_dt_yyyymmdd where day_id ='20191031'
+
+
+
+------流量饱和度
+
+select user_id,product_no,
+sum(USAGE_VOLUME/1204.0)/1024.0 cnt1,  ---使用流量
+sum(FREEVOLIME/1024.0)/1024.0 cnt2   ----总流量
+from default.DW_base_AI_USERPRIV_USAGES_yyyymmdd where day_id = 20191031
+
+
+-------主资费
+
+select user_id,
+	priv_name1,  --主资费
+	zhuti_value   --资费档次
+from hlw_dw_dangqian_zifei_jieguo_zhekou_yyyymmdd where day_id=20191031;
+
+
+
+-------主资费（次月）
+
+select user_id,
+	priv_value1,  --主资费
+	zhuti_value   --资费档次
+from HLW_DW_NEXT_ZIFEI_JIEGUO_ZHEKOU_YYYYMMDD where day_id=20191031;
+
+ 
+ 
+ select * from default.dw_base_customer_info_dt_yyyymmdd where day_id = 20200131
+ 
+ 
+
+-----终端（4G终端）
+
+select  user_id from default.dw_user_imei_dt_YYYYMMDD a
+left join default.dim_pub_all_terminfo_tac b on a.tac=b.tac
+where day_id='20191031' and n09  in ('1','6','7','9') 
+group by user_id
+
+-----终端（5G终端），随时有变，由局方提供。
+
+select distinct imei1,product_no1
+from temp_hlw_5g_imei_dt_jc a 
+where (product_no1 is not null or product_no2 is not null)
+
+
+-----终端品牌，终端型号
+select user_id,
+		TERM_TYPE,  --终端品牌
+		TERM_NAME	--终端型号
+from default.DW_ZZQS_USER_CONN_QIANYUE_DT_YYYYMMDD where day_id = 20191031
+
+
+
+
+
+----宽带（本网宽带）
+select
+user_id, 
+ZDW_F,  --宽带
+JIATDH_F, --短号  
+GXQLLGX_F  --流量共享圈
+from default.DW_ZZQS_USER_CONN_QIANYUE_DT_YYYYMMDD where day_id = 20191031
+
+
+----宽带（异网宽带严格口径）
+select user_id from HLW_DW_WIFI_USER_INFO_DT_YYYYMMDD where day_id='20191031' and wifi_user_type='WIFI网络采集用户' and ip_county<>'重庆移动' group by user_id
+
+----宽带（异网宽带老口径）
+HLW_DW_WIFI_YANSHENG_YWKD_DT_YYYYMMDD
+
+
+
+
+
+
+----副卡
+
+select a.user_id
+from default.DW_USER_USEAGE_PRIVILEGE_DT_yyyymmdd a
+where  a.day_id = '20191123'
+and a.PRIVSETID in ('gl_qgbxlfk','gl_bxlfk','gl_gprs_mking_n','gl_llsxkn','gl_llsxk','gl_wnsxk',
+'gl_wnsxkn','pip_main_rzkxck','pip_main_xckhjy','pmp_rzkxck','gl_4g_gprsllrzk',
+'gl_tcsrzk_2017n','pip_gprzkyb_lltc','gl_tcsrzk_2017n_1','gl_4g_gprsllrzk','gl_tcsrzk_2017n_2','pip_main_rzkxck')
+and (enddate>'2019-11-23' or enddate is null)
+
+
+----细分市场
+
+select 
+user_id,
+GRP_XY_F
+from default.DW_ZZQS_USER_CONN_QIANYUE_DT_YYYYMMDD where day_id = 20191031
+
+order zd desc
+
+-----网龄
+
+select 
+user_id,
+months_between('2019-10-31',open_date) wl
+from default.DW_ZZQS_USER_CONN_QIANYUE_DT_YYYYMMDD where day_id = 20191031
+
+
+
+
+
+------年龄
+
+select 
+user_id,
+age
+from default.DW_ZZQS_USER_CONN_QIANYUE_DT_YYYYMMDD where day_id = 20191031
+
+------签约（梦萍口径）
+select distinct user_id from default.dw_user_useage_privilege_dt_YYYYMMDD a 
+inner join temp_lmp_qy b on a.PRIVSETID=b.itemid
+where day_id='20191123' and (a.enddate>='2019-11-23' or a.enddate is null)
+
+
+------物联网卡
+select user_id from default.DW_ZZQS_USER_CONN_QIANYUE_DT_YYYYMMDD where day_id = 20191031 and is_wlk=1
+
+
+
+------黑名单公务机党政军
+select user_id from default.DW_ZZQS_BLACKLIST_DS_yyyymmdd where day_id ='20191028' and (STYLE1='黑名单' or STYLE2='公务机'or STYLE4='党政军')
+
+
+
+---超套收入 
+select 
+user_id,
+ll_ct_arpu, --流量超套收入
+yy_ct_arpu  --语音超套收入
+CT_MOU , --超套分钟数
+
+from default.DW_USER_CT_ARPU_MOU_DT_YYYYMMDD where day_id='20191031'
+
+ 
+ 
+---易携转高危
+select   product_no,user_id,county_name from hlw_dim_xz_jituan_pzuser_201906  
+
+
+
+----办理某业务
+select distinct b.order_id,b.code,a.user_id
+from default.dw_operation_req_yyyymmdd a,
+	  temp_lstj_1028_1 b   ---业务code
+where a.operate_code=b.code
+and a.status=1 
+and month_id='202005'
+and a.operate_desc like '加入%'
+;
+
+
+-----存在某业务
+
+select distinct user_id 
+from default.dw_user_useage_privilege_dt_YYYYMMDD a 
+where day_id='20191123' 
+and (a.enddate>='2019-11-23' or a.enddate is null)
+and  a.PRIVSETID in('')
+
+
+
+-----用户当月话费充值信息
+
+select user_id,max(to_date(rectime)) cz_time,sum(TRADE_FEE) fee from default.dw_operation_req_yyyymmdd
+where month_id='201905' and status=1 and OPERATE_CODE='Charge' 
+group by user_id
+
+
+
+
+--- 绑定银行卡金融数
+drop table temp_zduser_0424_10;
+create table temp_zduser_0424_10
+(user_id bigint,is_bank int,cnt_bank int)
+row format delimited fields terminated by ',' stored as textfile;
+
+insert overwrite table temp_zduser_0424_10
+select 
+   a.user_id
+  ,case when (main_card is not null or second_card1 is not null or second_card2 is not null
+         or second_card3 is not null or second_card4 is not null) then 1 else 0 end is_bank
+  ,sum(case when main_card is not null then 1 else 0 end)+sum(case when second_card1 is not null then 1 else 0 end)
+   +sum(case when second_card2 is not null then 1 else 0 end)+sum(case when second_card3 is not null then 1 else 0 end)
+   +sum(case when second_card4 is not null then 1 else 0 end)
+ from default.dw_bank_maincard_secondcard_user_info_ds_yyyymmdd a
+ where a.day_id ='20190331'
+ group by  a.user_id
+  ,case when (main_card is not null or second_card1 is not null or second_card2 is not null
+         or second_card3 is not null or second_card4 is not null) then 1 else 0 end;
+		 
+select count(user_id),count(distinct user_id) from temp_zduser_0424_10;
+
+
+
+
+
+-----视频偏好	
+drop table temp_zduser_0424_13;
+create table temp_zduser_0424_13
+(
+user_id bigint,
+TOTALBYTES decimal(20,2)   ------流量M
+)row format delimited fields terminated by ',' stored as textfile;
+
+insert overwrite table temp_zduser_0424_13
+select a.user_id ,sum(TOTALBYTES) TOTALBYTES
+from temp_qqt_0220_2 a,
+	  default.DW_GPRS_APP_BH_DT_YYYYMMDD b 
+where a.product_no = b.MSISDN
+  and b.day_id='20190331'
+  and b.SUBTYPENAME='视频'
+group by a.user_id
+;
+select count(1) from temp_zduser_0424_13;
+
+
+--------咪咕视频
+select MSISDN,1
+from (
+select MSISDN,sum(TOTALBYTES) appll from default.DW_GPRS_APP_BH_DT_YYYYMMDD
+where day_id in('20190930','20191031','20191130') 
+  and 应用名称= '咪咕视频'
+group by MSISDN
+) a where appll>0
+
+
+
+
+
+ 
+--稳定度评分
+hlw_dw_user_wdd2_dm_yyyymm
+
+
+
+
+----当前是否30天未通信
+ 
+-----沉默标签客户
+ 
+select user_id from HLW_DW_WTX_DAY_NUM_DT_YYYYMMDD where day_id = '20190331' and is_wtx_30=1 group by user_id 
+
+
+---投诉次数
+ 
+select a.SUBSNUMBER from 
+(
+select a.SUBSNUMBER,count(1) from default.DWD_ODS_CS_SERVREQUEST_YYYYMMDD a
+where a.month_id in (201809,201810,201811,201812,201901,201902) and a.OPERATIONSTATUS in ('3','4')
+group by a.SUBSNUMBER   ----用户来电提出服务请求的号码               -----操作状态
+
+having count(1)>=2
+) a;
+
+
+
+-----使用了volte功能
+
+select user_id from default.DW_BASE_ZZQS_VOLTE_TERMINAL_USERINFO_DT_YYYYMMDD 
+where day_id = '20190228' and volte_flag2='使用了volte功能' group by user_id
+
+
+
+
+---近三月是否有欠费停机 
+select distinct a.user_id,case when b.user_id is not null then 1 else 0 end is_qftj,
+               case when c.user_id is not null then 1 else 0 end is_qftj1,
+			   case when d.user_id is not null then 1 else 0 end is_qftj2
+from temp_hs_wdd2_all_users a 
+left join 
+(select user_id from DEFAULT.dw_product_outetype_dt_yyyymmdd where day_id=20181231 and userstatus_id in (9,26)
+         group by user_id )b on a.user_id=b.user_id
+left join 
+(select user_id from DEFAULT.dw_product_outetype_dt_yyyymmdd where day_id=20181130 and userstatus_id in (9,26)
+         group by user_id )c on a.user_id=c.user_id
+left join 
+(select user_id from DEFAULT.dw_product_outetype_dt_yyyymmdd where day_id=20181031 and userstatus_id in (9,26)
+         group by user_id )d on a.user_id=d.user_id;
+
+
+------随机取
+
+select * from temp_lmp_tcs_user_10_80_1 order by rand() limit 2
+
+
+
+------排序（导出用）
+ 
+select a.product_no,row_number() over() rn
+from temp_lsxq_1126_1 a 
+ 
+drop table temp_0916_1;
+create table temp_0916_1
+(
+  user_id bigint,
+  product_no varchar(11),
+  flag int,
+  rn int
+) compress yes partitioning key(user_id) using hashing in TBS_CDR not logged initially;
+;
+
+insert into table temp_0916_1
+select a.user_id,a.prodcut_no,a.flag,row_number() over() rn
+from dw_user_gaoweinew_mm_201909 a
+
+
+drop table temp_0916_2;
+create table temp_0916_2
+(
+  user_id bigint,
+  product_no varchar(11),
+  flag int 
+) compress yes partitioning key(user_id) using hashing in TBS_CDR not logged initially;
+;
+
+insert into   temp_0916_2
+select a.user_id,a.product_no,a.flag 
+from temp_0916_1 a where rn <=1000000
+;
+
+drop table temp_0916_3;
+create table temp_0916_3
+(
+  user_id bigint,
+  product_no varchar(11),
+  flag int 
+) compress yes partitioning key(user_id) using hashing in TBS_CDR not logged initially;
+;
+
+insert into   temp_0916_3
+select a.user_id,a.product_no,a.flag 
+from temp_0916_1 a where rn <=2000000
+;
+
+drop table temp_0916_3;
+create table temp_0916_3
+(
+  user_id bigint,
+  product_no varchar(11),
+  flag int 
+) compress yes partitioning key(user_id) using hashing in TBS_CDR not logged initially;
+;
+
+insert into   temp_0916_3
+select a.user_id,a.product_no,a.flag 
+from temp_0916_1 a where rn <=3000000
+;
+
+
+----座机
+where substr(product_no,1,1) ='1' and length(product_no) =11
+
+----儿童手表
+select  distinct tac from default.DIM_ERTONG_SHOUBIAO_TAC
+select user_id,tac from dw_user_imei_dt_YYYYMMdd
+
+
+
+--多终端流量共享圈用户信息表
+
+select a.user_id  from default.dw_zzqs_user_llgx_dt_yyyymmdd a
+where a.day_id =20190331 and a.is_llgx =1 and a.user_id is not null
+group by a.user_id
+union all
+select a.user_id1 user_id  from default.dw_zzqs_user_llgx_dt_yyyymmdd a
+where a.day_id =20190331 and a.is_llgx =1 and a.user_id1 is not null
+group by a.user_id1
+union all
+select a.user_id2 user_id  from default.dw_zzqs_user_llgx_dt_yyyymmdd a
+where a.day_id =20190331 and a.is_llgx =1 and a.user_id2 is not null
+group by a.user_id2
+union all
+select a.user_id3 user_id from default.dw_zzqs_user_llgx_dt_yyyymmdd a
+where a.day_id =20190331 and a.is_llgx =1 and a.user_id3 is not null
+group by a.user_id3
+union all
+select a.user_id4 user_id from default.dw_zzqs_user_llgx_dt_yyyymmdd a
+where a.day_id =20190331 and a.is_llgx =1 and a.user_id4 is not null
+group by a.user_id4
+;
+ 
+
+--------是否插卡
+select distinct product_no from HLW_DWD_TEMP_USER_TRACK_USER_YYYYMMDD where day_id ='20190331' ---插卡用户
+
+
+--------重点客户
+select user_id from HLW_ZB_PZUSERS_JBSX_DATA_201812 where is_pzzd='重点客户'
+
+
+
+
+-----沉默标签客户
+ 
+select user_id,
+		case when is_wtx_05_10=1 then 1   
+			  when is_wtx_10_30=1 then 2
+			  when is_wtx_30=1 then 3
+			  else 0 end is_cm,
+from HLW_DW_WTX_DAY_NUM_DT_YYYYMMDD where day_id = '20190331'
+
+
+
+---异网标签
+select count(a.product_no) from temp_mas_WiFi_no_201904 a
+inner join 
+(select product_no from HLW_YWLL_APP_LL_TYPE_YYYYMMDD 
+        where day_id='20190423' and yw_first=1 or lx_type=1)b on  a.product_no=b.product_no
+		
+
+-----用户当月话费充值信息
+
+select user_id,max(to_date(rectime)) cz_time,sum(TRADE_FEE) fee from default.dw_operation_req_yyyymmdd
+where month_id='201905' and status=1 and OPERATE_CODE='Charge' 
+group by user_id
+
+
+-----用户当前话费余额
+select user_id,product_no,left_fee as pre_ye
+from default.dw_user_acctleftfee_yyyymmdd
+where day_id='20190505'
+
+
+ 
+----异网双卡新口径
+
+default.dw_bass_yiwang_double_card_mm_yyyymm
+
+----异网双卡新新口径
+default.dw_user_double_imei_dt_yyyymmdd
+
+
+-----通信口径
+7-30天通信
+4-90天通信
+5-当月通信
+select distinct a.user_id
+from default.dw_product_outetype_dt_YYYYMMDD a 
+where a.day_id='20201222' and a.active=1 
+and substr(a.gra_product_attr_id1,5,1)='1' 
+
+
+
+
+
+--------------5元组合包的目标库数据表
+select * from HLW_DT_5YUAN_ZUHE_USER_MM_YYYYMM where month_id = 201906
+
+
+
+------------本地主卡
+select * from default.DW_ZZQS_DM_DOUBLE_CARD_INFO_DETAIL_DT_YYYYMMDD where day_id =20190806
+
+------------集团主卡
+
+select user_id from default.dw_bass_yiwang_double_card_mm_yyyymm where month_id =201907 and flag in ('电信移动','联通移动')
+
+
+
+
+----==========================================常用整合语句=====================================
+
+----------营销数据案例
+
+
+异网双卡营销目标客户输出：
+9月集团异网双卡，9月流量超套5元以内，营销“签约套餐+1元包”
+正常在用且插卡，按9月互斥口径进行目标客户提取
+
+DROP TABLE temp_ywsk_1010_2;
+CREATE TABLE temp_ywsk_1010_2(
+ product_no varchar(16)
+)     
+row format delimited fields terminated by ',' stored as textfile ;  
+
+insert into table temp_ywsk_1010_2
+select distinct b.product_no
+from (select user_id from default.dw_bass_yiwang_double_card_mm_yyyymm where month_id = '201909') a 
+inner join (
+			select user_id,product_no,plan_name from default.dw_zzqs_user_conn_qianyue_dt_yyyymmdd where day_id='20191028' 
+				   and IS_WLK=0 and USER_STATUS='正常在用' and open_date<='2019-04-01'   
+				   group by user_id,product_no,plan_name
+			) b on a.user_id=b.user_id    /*物联网卡、正常在用、入网三个月、年龄在18-60*/
+inner join (select  product_no from HLW_DWD_TEMP_USER_TRACK_USER_YYYYMMDD where day_id ='20191028') x1 on b.product_no=x1.product_no /*插卡*/
+left join (select user_id from default.DW_ZZQS_BLACKLIST_DS_yyyymmdd where day_id ='20191028' and (STYLE1='黑名单' or STYLE2='公务机'or STYLE4='党政军')) c on b.user_id = c.user_id 
+left join (select a.user_id
+			 from default.DW_USER_USEAGE_PRIVILEGE_DT_yyyymmdd a
+			  where  a.day_id = '20191028'
+			 and a.PRIVSETID in ('gl_qgbxlfk','gl_bxlfk','gl_gprs_mking_n','gl_llsxkn','gl_llsxk','gl_wnsxk','gl_wnsxkn','pip_main_rzkxck','pip_main_xckhjy','pmp_rzkxck','gl_4g_gprsllrzk',
+			  'gl_tcsrzk_2017n','pip_gprzkyb_lltc','gl_tcsrzk_2017n_1','gl_4g_gprsllrzk','gl_tcsrzk_2017n_2','pip_main_rzkxck',
+			  'gl_cnsbxl30_3','gl_cnsbxl30_6','gl_cnsbxl30_12k','gl_cnsbxl50_3','gl_cnsbxl50_6','gl_cnsbxl50_12',
+			 'gl_cnsbxl70_3','gl_cnsbxl70_6','gl_cnsbxl70_12','gl_cnxf_sll1','gl_cnxf_sll2','gl_cnxf_sll3','gl_cntc_sll',
+			 'gl_qyxf_sll1','gl_qyxf_sll2','gl_qyxf_sll3','gl_qyxf_sll4','gl_qyxf_syy1','gl_qyxf_syy2','gl_qyxf_syy3','gl_qyxf_syy4',
+			 'gl_dllsxb_10y','gl_lldjb_10g6y','gl_lldjb_10g12y')
+			 and (enddate>'2019-10-28' or enddate is null) ) d on b.user_id = d.user_id   -----剔除副卡，承诺类
+left join (select a.user_id 
+			 from default.DW_USER_USEAGE_PRIVILEGE_DT_yyyymmdd a,
+			 (
+			 select code from temp_zj_kr_code  where code_type in ('主资费','叠加包','承诺类')
+			 union all
+			 select itemid code from temp_lmp_hc_code
+			 union all
+			 select code from temp_ywsk_bxl_code
+			 ) b
+			 where a.PRIVSETID=b.code
+			 and a.day_id = '20191028'
+			 and (enddate>'2019-10-28' or enddate is null)) x on b.user_id = x.user_id   ----互斥
+left join temp_zj_fyxtc g on b.plan_name = g.plan_name    ----座机及其他不可运营套餐
+left join default.DW_USER_CT_ARPU_MOU_DT_YYYYMMDD c1 on a.user_id = c1.user_id and c1.day_id='20190930'
+where g.plan_name is null
+  and c.user_id is null 
+  and d.user_id is null
+  and x.user_id is null
+  and substr(b.product_no,1,1) = '1'/*指定第一个位置的号码是1*/
+  and c1.ll_ct_arpu<5
+  ;
+
+select count(1) from temp_ywsk_1010_2;
+244195
+
+
+
+
+
+--7月对比1月发生降档
+drop table temp_mas_zdsj_user_jd_2019_0102;
+create table temp_mas_zdsj_user_jd_2019_0102
+(user_id bigint,product_no string)
+row format delimited fields terminated by ',' stored as textfile;
+
+insert into table temp_mas_zdsj_user_jd_2019_0102
+select a.user_id,a.product_no from temp_mas_zdsj_user_2019_0102 a 
+left join (select user_id,priv_value1 from hlw_dw_dangqian_zifei_jieguo_zhekou_yyyymmdd where day_id='20190721')b on a.user_id=b.user_id 
+left join (select user_id,priv_value1 from hlw_dw_dangqian_zifei_jieguo_zhekou_yyyymmdd where day_id='20190131')c on a.user_id=c.user_id 
+where  b.priv_value1<c.priv_value1;
+select count(*),count(distinct user_id) from temp_mas_zdsj_user_jd_2019_0102;
+
+
+
+--------------高危项目口径生成语句
+
+---高频高额超套用户
+DROP TABLE temp_ldp_gpgect_user_201909;
+CREATE TABLE temp_ldp_gpgect_user_201909 (user_id bigint,product_no varchar(16))     
+row format delimited fields terminated by ',' stored as textfile ;  
+ 
+insert into table temp_ldp_gpgect_user_201909
+select distinct a.user_id,b.product_no  from 
+(
+select a.user_id,sum(case when nvl(a.itemaddcode,'0')='0' and b.flag=1 and b.fee_type in (40,41,42,43,44)
+							     then a.fee/100.0 else 0 end) ct_ll_fee
+            from default.dw_bill_item_dt_yyyymmdd a
+			left join default.rpt_dim_fee_change_new b on a.itemcode_id=b.itemcode_id
+			where a.day_id=20190930 and a.itemtype in (1,2,3)
+			group by a.user_id )a 
+inner join 
+(select user_id,product_no from default.dw_zzqs_user_conn_qianyue_dt_yyyymmdd where day_id='20190930' 
+     and IS_WLK=0)b on a.user_id=b.user_id
+left join 
+(
+select distinct a.user_id
+from default.dw_user_useage_privilege_dt_yyyymmdd a
+            where a.day_id ='20190930' 
+            and nvl(to_date(a.enddate),'2050-01-01')>nvl(to_date(a.startdate),'2000-01-01')
+            and nvl(to_date(a.startdate),'2000-01-01')<='2019-09-30'
+            and nvl(to_date(a.enddate),'2050-01-01') >'2019-09-30'
+			and a.privsetid in ('pip_main_nolim109','gl_bdbxl_tc','gl_bdbxl_tcn','pip_main_nolim199','pip_main_qgbxl159',
+'pip_main_qgbxl169','pip_main_qgbxl198','gl_4gqgbxl238','pip_main_qgbxl239','pip_main_qgbxl289','pip_main_qgbxl389',
+'pip_main_qgbxl69','gl_4gqgbxl98','pip_main_qgbxl99','pip_gprs_nolim1','pip_gprs_nolim2','pip_gprs_nolim3','pip_main_zxjh288',
+'pip_main_zxjh388','pip_main_zxjh588','gl_4grwytc198','gl_4grwytc78','gl_4grwytc98','gl_rwy_tcc','gl_rwy_tca','gl_rwy_tcb',
+'pip_main_qgbxl128','gl_xydjb_19a','gl_xydjb_19b','gl_xydjb_39a','gl_xydjb_39b','gl_xydjb_59a','gl_xydjb_59b','pip_main_rzkxck')
+)c on a.user_id=c.user_id
+left join 
+(select user_id,sum(freevolime) freevolime from default.DW_BASE_AI_USERPRIV_USAGES_YYYYMMDD where day_id='20190930' 
+           and zb_name like'%列账套餐%' and  flag_desc<>'结转流量'  group by user_id)d on a.user_id=d.user_id
+left join 
+(
+select  a.user_id  from 
+(select user_id from DEFAULT.dw_product_outetype_dt_yyyymmdd  
+	where active=1 and substr(gra_product_attr_id1,4,1)='1' and day_id=20190831 group by user_id)a 
+	left join 
+	(select a.user_id,sum(case when nvl(a.itemaddcode,'0')='0' and b.flag=1 and b.fee_type in (40,41,42,43,44)
+							     then a.fee/100.0 else 0 end) ct_ll_fee
+            from default.dw_bill_item_dt_yyyymmdd a
+			left join default.rpt_dim_fee_change_new b on a.itemcode_id=b.itemcode_id
+			where a.day_id=20190831 and a.itemtype in (1,2,3)
+			group by a.user_id)b on a.user_id=b.user_id
+	left join 
+	(select user_id,sum(freevolime) freevolime from default.DW_BASE_AI_USERPRIV_USAGES_YYYYMMDD where day_id='20190831' 
+           and zb_name like'%列账套餐%' and  flag_desc<>'结转流量'  group by user_id)c on a.user_id=c.user_id
+	where b.ct_ll_fee>0 and c.freevolime>0
+)e on a.user_id=e.user_id
+left join 
+(
+select  a.user_id  from 
+(select user_id from DEFAULT.dw_product_outetype_dt_yyyymmdd  
+	where active=1 and substr(gra_product_attr_id1,4,1)='1' and day_id=20190731 group by user_id)a 
+	left join 
+	(select a.user_id,sum(case when nvl(a.itemaddcode,'0')='0' and b.flag=1 and b.fee_type in (40,41,42,43,44)
+							     then a.fee/100.0 else 0 end) ct_ll_fee
+            from default.dw_bill_item_dt_yyyymmdd a
+			left join default.rpt_dim_fee_change_new b on a.itemcode_id=b.itemcode_id
+			where a.day_id=20190731 and a.itemtype in (1,2,3)
+			group by a.user_id)b on a.user_id=b.user_id
+	left join 
+	(select user_id,sum(freevolime) freevolime from default.DW_BASE_AI_USERPRIV_USAGES_YYYYMMDD where day_id='20190731' 
+           and zb_name like'%列账套餐%' and  flag_desc<>'结转流量'  group by user_id)c on a.user_id=c.user_id
+	where b.ct_ll_fee>0 and c.freevolime>0
+)f on a.user_id=f.user_id
+where a.ct_ll_fee>=30 and d.freevolime>0
+and c.user_id is null
+and (e.user_id is not null or f.user_id is not null or (e.user_id is not null and f.user_id is not null))
+;
+
+select count(1) from temp_ldp_gpgect_user_201909;
+48250
+			  
+
+
+----低消保号 
+DROP TABLE temp_ldp_dxbh_user_201908;
+CREATE TABLE temp_ldp_dxbh_user_201908 (user_id bigint,product_no varchar(16))     
+row format delimited fields terminated by ',' stored as textfile ;  
+ 
+insert into table temp_ldp_dxbh_user_201908
+select distinct a.user_id,a.product_no
+from 
+(
+select user_id,product_no from default.dw_zzqs_user_conn_qianyue_dt_yyyymmdd  
+      where day_id='20190831' and IS_WLK=0 
+) a 
+inner join 
+(select user_id from  default.DW_USER_ARPU_MOU_DOU_DT_YYYYMMDD where day_id=20190831 and FEE_FLOW=0 and arpu<20 and arpu>0
+)b on a.user_id=b.user_id
+left join
+(select user_id,sum(call_duration_m)zj_mou
+     from default.dw_user_call_dt_yyyymmdd
+      where day_id=20190831 and cdrtype_id=1
+     group by user_id 
+   )c on c.user_id = a.user_id
+where c.zj_mou=0 or c.user_id is null;
+
+select count(user_id),count(distinct user_id) from temp_ldp_dxbh_user_201908;
+
+
+
+
+
+----异网主卡用户=当月为异网主卡，且非物联网用户。
+DROP TABLE temp_ldp_ywzk_user_201909;
+CREATE TABLE temp_ldp_ywzk_user_201909 (user_id bigint,product_no varchar(16))     
+row format delimited fields terminated by ',' stored as textfile ;  
+ 
+insert into table temp_ldp_ywzk_user_201909
+select distinct a.user_id,b.product_no from DEFAULT.dw_bass_yiwang_double_card_mm_yyyymm a 
+inner join(select user_id,product_no from default.dw_zzqs_user_conn_qianyue_dt_yyyymmdd where day_id='20190930' and IS_WLK=0)b on a.user_id=b.user_id
+where a.month_id=201909 and a.flag in ('电信移动','联通移动');
+;
+select count(1) from temp_ldp_ywzk_user_201909;
+967011
+
+
+ 
+----4G拍照双降用户 
+drop table temp_ldp_4gsj_user_201909;
+create table temp_ldp_4gsj_user_201909
+(user_id  bigint,product_no varchar(14))
+row format delimited fields terminated by ',' stored as textfile;
+
+insert into table temp_ldp_4gsj_user_201909
+select distinct a.user_id,a.product_no
+from temp_ldp_sjpz_user a 
+inner join 
+(select distinct user_id,product_no  from default.dw_zzqs_user_conn_qianyue_dt_yyyymmdd 
+    where day_id=20190930)b on a.user_id=b.user_id
+left join 
+(select user_id,ARPU,FEE_FLOW dou from default.DW_BASE_USER_ARPU_MOU_DOU_DT_YYYYMMDD 
+   where day_id=20190930)c on a.user_id=c.user_id
+where a.avg_arpu-c.arpu>=0.3*a.avg_arpu  and a.avg_dou-c.dou>=0.3*a.avg_dou;
+;
+
+select count(1) from temp_ldp_4gsj_user_201909;
+640877
+ 
+------沉默攻坚：	HLW_DW_WTX_DAY_NUM_DT_YYYYMMDD
+drop table temp_ldp_cmgj_user_201909;
+create table temp_ldp_cmgj_user_201909
+(user_id  bigint,product_no varchar(14))
+row format delimited fields terminated by ',' stored as textfile;
+
+insert into table temp_ldp_cmgj_user_201909
+select distinct user_id,product_no from default.dw_zzqs_user_conn_qianyue_dt_yyyymmdd 
+where day_id='20190930' and TONGXIN_MONTH=0 and TONGXIN_2MONTH=1 and is_wlk=0;
+;
+
+select count(1) from temp_ldp_cmgj_user_201909;
+538221
+
+
+
+
+
+-----4G转化攻坚：上月通信用户，4G终端且0流量	
+DROP TABLE temp_ldp_4gzhgj_user_201909;
+CREATE TABLE temp_ldp_4gzhgj_user_201909 (user_id bigint,product_no varchar(16))     
+row format delimited fields terminated by ',' stored as textfile ;  
+
+insert into table temp_ldp_4gzhgj_user_201909
+select distinct a.user_id,a.product_no
+from default.DW_ZZQS_USER_CONN_QIANYUE_DT_YYYYMMDD a 
+inner join 
+(
+select  user_id from default.dw_user_imei_dt_YYYYMMDD a
+left join default.dim_pub_all_terminfo_tac b on a.tac=b.tac
+where day_id='20190930' and n09  in ('1','6','7','9') 
+group by user_id
+)b on a.user_id=b.user_id
+left join default.dim_pub_county d on a.county_id=d.county_id
+left join default.DW_GPRS_USER_FLOW_DT_YYYYMMDD  e on a.user_id=e.user_id and e.day_id='20190930' and g4_allflow>0
+where a.day_id='20190930' and a.TONGXIN_MONTH=1 and a.IS_WLK=0  and e.user_id is null;
+;
+
+select count(1) from temp_ldp_4gzhgj_user_201909;
+2319516
+
+
+
+----双低：统计月在网， Arpu＜20元且Dou＜100MB，非物联网卡数据卡的用户。
+DROP TABLE temp_ldp_sd_user_201909;
+CREATE TABLE temp_ldp_sd_user_201909 (user_id bigint,product_no varchar(16))     
+row format delimited fields terminated by ',' stored as textfile;  
+ 
+insert into table temp_ldp_sd_user_201909
+select distinct user_id,product_no 
+from default.dw_zzqs_user_conn_qianyue_dt_yyyymmdd 
+where day_id='20190930' and ARPU<20 and DOU<100 
+and TONGXIN_MONTH=1 and IS_WLK=0;
+	 
+select count(*),count(distinct user_id) from temp_ldp_sd_user_201909;
+
+
+----4G拍照双降用户 
+drop table temp_ldp_4gsj_user_201907;
+create table temp_ldp_4gsj_user_201907
+(user_id  bigint,product_no varchar(14))
+row format delimited fields terminated by ',' stored as textfile;
+
+insert into table temp_ldp_4gsj_user_201907
+select distinct a.user_id,a.product_no
+from temp_ldp_sjpz_user a 
+inner join 
+(select distinct user_id,product_no  from default.dw_zzqs_user_conn_qianyue_dt_yyyymmdd 
+    where day_id=20190731)b on a.user_id=b.user_id
+left join 
+(select user_id,ARPU,FEE_FLOW dou from default.DW_BASE_USER_ARPU_MOU_DOU_DT_YYYYMMDD 
+   where day_id=20190731)c on a.user_id=c.user_id
+where a.avg_arpu-c.arpu>=0.3*a.avg_arpu  and a.avg_dou-c.dou>=0.3*a.avg_dou;
+;
+
+select count(1) from temp_ldp_4gsj_user_201907;
+
+
+
+-------------携转口径
+
+
+-------携转专题携入用户明细表 （11月携转以来累计用户）
+select user_id,     ---
+		PRODUCT_NO,
+		OUTCARRIER,  ---运营商
+		XR_TIME		  ---携出时间
+from default.DW_ZZQS_XZZT_XR_USER_DT_YYYYMMDD where day_id = 20191208
+
+
+-------携转专题携出用户明细表（11月携转以来累计用户）
+
+select user_id,     ---
+		PRODUCT_NO,
+		incarrier,  ---运营商
+		XC_TIME		  ---携出时间
+from default.DW_ZZQS_XZZT_XC_USER_DT_YYYYMMDD where day_id = 20191208
+
+
+
+
+
+
+------携转专题携入移动用户过程明细表
+
+select user_id,
+		product_no,
+		
+from default.DW_ZZQS_XZZT_XR_GC_DT_YYYYMMDD where day_id = 20191208
+
+
+np_result
+
+
+
+
+-------DW_ZZQS_XZZT_XC_GC_DT_YYYYMMDD（携转专题移动用户携出过程明细表）
+
+
+------------------用户状态
+
+USERSTATUS
+
+
+---------优惠到期
+
+
+select distinct a.user_id,a.product_no,a.area_name,
+case when a.county_name in ('渝中','南岸')              then'城一'
+     when a.county_name in ('江北','渝北','两江新区')   then'城二'
+     when a.county_name in ('九龙坡','沙坪坝','大渡口') then'城三'else a.county_name end,
+case when d.user_id is not null then '集团客户'else '非集团客户'end
+from 
+(
+select distinct user_id,product_no,b.county_name,c.area_name from default.DW_PRODUCT_OUTETYPE_DT_YYYYMMDD a
+left join default.dim_pub_county b on a.county_id=b.county_id
+left join default.DIM_PUB_AREA   c on a.area_id=c.area_id
+where day_id='20200430' and active=1 and substr(gra_product_attr_id1,5,1)='1' ---上月底
+)a 
+inner join default.DW_PRODUCT_OUTETYPE_DT_YYYYMMDD a1 on a.user_id=a1.user_id and a1.active=1 and a1.day_id='20191231' and substr(a1.gra_product_attr_id1,5,1)='1'---去年年底时间不变
+inner join 
+(
+select distinct a.user_id from default.DW_USER_USEAGE_PRIVILEGE_DT_YYYYMMDD a
+inner join temp_lmp_qy b on a.PRIVSETID=b.itemid
+where a.day_id='20200430' and a.startdate<='2019-11-30'and a.enddate='2020-05-01' ---上月月底时间/半年前/本月1日
+)b on a.user_id=b.user_id
+left join
+(
+select distinct user_id from default.dw_user_useage_privilege_dt_YYYYMMDD a 
+where day_id='20200430' and (a.enddate>='2020-04-30' or a.enddate is null) and a.PRIVSETID in('gl_dllsxb_10y','gl_lldjb_10g6y','gl_lldjb_10g12y','gl_qgbxlfk',
+'gl_bxlfk','gl_gprs_mking_n','gl_gprs_mking','gl_4g_gprsllrzk','gl_llsxkn','gl_llsxk','gl_wnsxk','gl_wnsxkn','pip_main_rzkxck','pip_main_xckhjy')---上月月末时间
+)c on a.user_id=c.user_id
+left join
+(
+select distinct user_id from default.DW_BASE_ZZQS_GROUP_DAY_MEMBER_DM_YYYYMMDD 
+where day_ID='20200430' and IS_HANGYE = '否' and IS_WULIAN_USER = '否' and IS_SHUJUKA_USER = '否' and IS_VALID = '参与考核' ---上月底
+)d on a.user_id=d.user_id
+where c.user_id is null;
+
+
+---业务维表
+dim_pub_privilege
+
+
+
+
+DROP TABLE temp_ywsk_czz_2;
+CREATE TABLE temp_ywsk_czz_2(
+ user_id varchar(16),dou decimal (20,2)
+)     
+row format delimited fields terminated by ',' stored as textfile ;  
+ 
+insert into table temp_ywsk_czz_2
+
+----企业编码，业务编码
+
+select substr(a.startdate,1,10) op_time,a.subsid user_id
+from default.DWD_SUBS_SPSERVICE_YYYYMMDD a 
+inner join  HLW_DIM_SRJK_YWLX_CODE   b ----临时表，将数据导进去
+on a.spid =b.sid1 and a.SPBIZID = b.sid2
+where a.day_id = '${sd_date}'
+  and substr(a.startdate,1,10)>='${d_taskid}'
+  and substr(a.startdate,1,10)<='${ld_date}'
+group by substr(a.startdate,1,10) ,a.subsid
+;
+
+
+
+
+
+
+select '',substr(a.startdate,1,10) op_time,a.subsid user_id,c.oper_code,b.price,b.ywlx,b.yw_name,b.llhl,b.yyhl,'','','','',d.county_id,e.area_id,d.dept_id
+from default.DWD_SUBS_SPSERVICE_YYYYMMDD a 
+inner join (select * from HLW_DIM_SRJK_YWLX_CODE where ywlx ='电视增值包' and code is null) b on a.spid =b.sid1 and a.SPBIZID = b.sid2
+left join default.dw_product_dt_yyyymmdd d on a.subsid = d.user_id and d.day_id ='${sd_date}'
+left join default.DW_OPERATION_REQ_YYYYMMDD c on a.applyoid = c.oid and c.month_id = '${sm_date}'
+left join default.dim_pub_dept e on d.dept_id=e.dept_id
+where a.day_id = '${sd_date}'
+  and substr(a.startdate,1,10)>='${d_taskid}'
+  and substr(a.startdate,1,10)<='${ld_date}'
+group by substr(a.startdate,1,10) ,a.subsid,c.oper_code,b.price,b.ywlx,b.yw_name,b.llhl,b.yyhl,d.county_id,e.area_id,d.dept_id
+;
+
+
+----分公司 分局 网格 维表
+default.dim_pub_county_new
+default.dim_pub_area_new
+default.dim_pub_dept_new
+default.dim_pub_channel_info
+
+case when b.county_name in ( '南岸','渝中') then'城一'
+when b.county_name in ( '渝北','江北','两江新区')then'城二'
+when b.county_name in ( '沙坪坝','大渡口','九龙坡')then'城三' else b.county_name end as county_name
+default.dim_pub_county
+
+----漫入漫出
+select * from default.DW_ZZQS_USE_LOG_YYYYMMDD
+where month_id=202012 and ( oper_name like '%漫入%' or  oper_name like '%漫出%')
+
+----日流量
+select day_id,fee_flow from default.DW_GPRS_USER_FLOW_Ds_yyyymmdd
+where month_id=201812
+group by day_id,fee_flow
+
+-- 漫游类
+DROP TABLE temp_ldp_khjk_user_202005_manyou;
+CREATE TABLE temp_ldp_khjk_user_202005_manyou 
+(
+user_id bigint,product_no varchar(16),
+roam_dou decimal(16,2), -- 漫游流量
+roam_calls int -- 漫游主叫语音
+)     
+row format delimited fields terminated by ',' stored as textfile;  
+ 
+insert into table temp_ldp_khjk_user_202005_manyou
+
+select distinct a.user_id,a.product_no,b.roam_dou,c.roam_calls
+from (
+select user_id,product_no from default.dw_product_outetype_dt_yyyymmdd
+where active=1 and day_id=20200531
+group by user_id,product_no
+) a 
+left join 
+(select user_id,sum(roam_all_flow/1024/1024) roam_dou from default.DW_GPRS_USER_FLOW_Dt_YYYYMMDD
+  where day_id=20200531 group by user_id
+)b on a.user_id=b.user_id
+left join
+( 
+select product_no,sum(CALL_DURATION/60) roam_calls from default.DMRN_CALL_DETAIL_23_YYYYMM 
+
+
+
+-- 终端类型
+select distinct a.user_id,
+case when b.user_id is not null then '5G'
+     when b.user_id is null and c.zd_type='4G' then '4G'
+  when b.user_id is null and c.zd_type in ('2G','3G') then '2G/3G'
+  else '不详' end
+from
+(
+select user_id from temp_dw_djz_users where avg_zk_arpu<=30 and avg_zk_arpu>0
+)a
+left join
+(select a.user_id from default.dw_user_imei_dt_yyyymmdd a
+inner join
+(select tac from DEFAULT.DW_BASS_IMEI_TERMINFO_MS where N37='1' group by tac) b on a.TAC=b.tac
+where a.day_id=20201116
+group by a.user_id
+) b on b.user_id=a.user_id
+left join
+(
+select user_id,
+case when b.n09 in ('1','6','7','9') then '4G'
+     when b.n08 in ('3','5','6','7') then '3G'
+  when b.tac is not null then '2G' else '不详' end zd_type
+from default.dw_user_imei_dt_YYYYMMDD a
+left join default.DW_BASS_IMEI_TERMINFO_MS b on a.tac=b.tac
+where day_id=20201116
+)c on a.user_id=c.user_id
+;
+
+--多终端流量共享圈用户信息表
+drop table temp_hlw_dhfkh_llgx_user7;
+create table temp_hlw_dhfkh_llgx_user7
+(user_id bigint )
+row format delimited fields terminated by ',' stored as textfile;
+
+insert overwrite table temp_hlw_dhfkh_llgx_user7
+select user_id from 
+(
+select a.user_id  from default.dw_zzqs_user_llgx_dt_yyyymmdd a
+where a.day_id =20180731 and a.is_llgx =1 and a.user_id is not null
+group by a.user_id
+union all
+select a.user_id1 user_id  from default.dw_zzqs_user_llgx_dt_yyyymmdd a
+where a.day_id =20180731 and a.is_llgx =1 and a.user_id1 is not null
+group by a.user_id1
+union all
+select a.user_id2 user_id  from default.dw_zzqs_user_llgx_dt_yyyymmdd a
+where a.day_id =20180731 and a.is_llgx =1 and a.user_id2 is not null
+group by a.user_id2
+union all
+select a.user_id3 user_id from default.dw_zzqs_user_llgx_dt_yyyymmdd a
+where a.day_id =20180731 and a.is_llgx =1 and a.user_id3 is not null
+group by a.user_id3
+union all
+select a.user_id4 user_id from default.dw_zzqs_user_llgx_dt_yyyymmdd a
+where a.day_id =20180731 and a.is_llgx =1 and a.user_id4 is not null
+group by a.user_id4
+) a group by user_id;
+;
+
+----APP
+
+
+DROP TABLE temp_ldp_app_user_201912;
+CREATE TABLE temp_ldp_app_user_201912
+(
+TYPENAME string,
+SUBTYPENAME string,
+cnt int,
+totle double,
+days int 
+)
+row format delimited fields terminated by ',' stored as textfile ;  
+
+insert into table temp_ldp_app_user_201912
+
+select 
+case when TYPENAME in ('阅读类','阅读') then '阅读'
+     when TYPENAME in ('音乐类','音乐') then '音乐'
+  when TYPENAME in ('视频类','视频') then '视频'
+  when TYPENAME in ('游戏类','游戏') then '游戏'
+  else TYPENAME end TYPENAME,
+SUBTYPENAME,count(distinct MSISDN),sum(TOTALBYTES),sum(USEDAYS)
+from default.DW_GPRS_APP_BH_DT_YYYYMMDD
+where day_id=20191231 and TOTALBYTES>0
+group by 
+case when TYPENAME in ('阅读类','阅读') then '阅读'
+     when TYPENAME in ('音乐类','音乐') then '音乐'
+  when TYPENAME in ('视频类','视频') then '视频'
+  when TYPENAME in ('游戏类','游戏') then '游戏'
+  else TYPENAME end,SUBTYPENAME
+;
+
+select count(*) from temp_ldp_app_user_201912;
+
+
+----2021年超高端用户
+HLW_DIM_CGD_USER_PRODUCT_
+
+和彩云资产表
+default.dwd_ods_jt_vgdi_71205_yyyymmdd
+
+----新的工号渠道类型表
+HLW_DIM_OPER_CHANNEL_STYLE_${YYYYMMDD}
+HLW_DIM_OPER_CHANNEL_STYLE_YYYYMMDD
+
+----企业编码，业务编码（办理）
+select '',substr(a.startdate,1,10) op_time,a.subsid user_id,c.oper_code,b.price,b.ywlx,b.yw_name,b.llhl,b.yyhl,'','','','',d.county_id,e.area_id,d.dept_id
+from default.DWD_SUBS_SPSERVICE_YYYYMMDD a 
+inner join  b on a.spid =b.sid1 and a.SPBIZID = b.sid2
+left join default.DW_OPERATION_REQ_YYYYMMDD c on a.applyoid = c.oid and c.month_id = '${sm_date}'
+where a.day_id = '${sd_date}'
+  and substr(a.startdate,1,10)>='${d_taskid}'
+  and substr(a.startdate,1,10)<='${ld_date}'
+group by substr(a.startdate,1,10) ,a.subsid,c.oper_code,b.price,b.ywlx,b.yw_name,b.llhl,b.yyhl,d.county_id,e.area_id,d.dept_id
+;
+
+
+----权益收入监控表
+ cqvgopdb.st_app_qyrhb_fee_fdt
+----权益用户监控表
+ cqvgopdb.st_app_qyrhb_user_fdt
+----权益退订用户监控表
+cqvgopdb.st_app_qyrhb_zddq_user_fdt
+----跨年大会战
+cqvgopdb.st_app_newbusi_2020kndh_fdt
+----权益融合包用户及权益领用总表
+cqvgopdb.ST_APP_QYRHB_DIM_CHL_RECEIVE_FDT_
+
+----激活时间
+DW_BASE_ZNJF_TERM_DEVELOP_DETAIL_DT_YYYYMMDD
+----终端品牌，终端型号，终端销售日期
+DW_COMPLETE_AI_CHL_TERM_SALE_DM_NEW_YYYYMMDD 
+
+
+----副卡code
+'gl_llsxk','gl_qgbxlfk','gl_wnsxkn','gl_llsxkn','gl_wnsxk','gl_bxlfk','gl_szx_qqfkyh1'
+
+
+-----宽带
+select *
+from default.DW_ZNJF_CUST_ZHUDINET_INFO_OUTSIDE_DM_YYYYMMDD
+where day_id='20201231' and online_90_flag=1 
+
+----全球通VIP客户
+DW_ZZQS_QQT_VIP_USER_DT_YYYYMMDD

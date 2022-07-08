@@ -15,6 +15,7 @@ create table temp_hlw_5g_tb_sale_map_info_01
     is_xy18 int,     -- 是否套餐18以下
     is_fk int     -- 是否副卡
 ) distributed by ('user_id');
+
 drop table temp_hlw_5g_tb_sale_map_info_qyrh;
 create table temp_hlw_5g_tb_sale_map_info_qyrh as    -- 权益融合套餐用户
 select distinct product_no 
@@ -32,7 +33,7 @@ from
     group by msisdn,subtypename
     having sum(usedays) >=15
 ) a 
-
+;
 insert into temp_hlw_5g_tb_sale_map_info_01
 select  t1.user_id,t1.product_no,
         ' ',
