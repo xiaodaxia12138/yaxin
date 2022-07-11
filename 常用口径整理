@@ -45,12 +45,35 @@ where (a.enddate>'2022-06-21' or a.enddate is null)
 -- 5G基站
 HLW_DW_ZHIYEJUZHU_202206
 
+-- 双卡用户
 
+default.dw_bass_yiwang_double_card_mm_yyyymm
 
+-- 4G终端
+select  user_id 
+from default.dw_user_imei_dt_YYYYMMDD a
+left join default.dim_pub_all_terminfo_tac b on a.tac=b.tac
+where day_id='20190930' and n09  in ('1','6','7','9') 
+group by user_id
 
+-- 5G终端
+select distinct a.user_id,a.product_no
+from cqbassdb.dw_user_imei_dt_20211031 a
+inner join cqbassdb.dim_pub_5g_terminfo_tac b on a.tac=b.tac
 
+-- 分公司分类统计
 
-
+select case when b.county_name in ('南岸','渝中') then '城一'
+            when b.county_name in ('渝北','江北','两江新区') then '城二'
+            when b.county_name in ('沙坪坝','大渡口','九龙坡') then '城三' 
+            else b.county_name
+            end as county_name
+from cqbassdb.dim_pub_county_new b
+group by case when b.county_name in ('南岸','渝中') then '城一'
+            when b.county_name in ('渝北','江北','两江新区') then '城二'
+            when b.county_name in ('沙坪坝','大渡口','九龙坡') then '城三' 
+            else b.county_name
+            end 
 
 
 
@@ -819,7 +842,6 @@ select count(user_id),count(distinct user_id) from temp_ldp_dxbh_user_201908;
 
 
 
-
 ----异网主卡用户=当月为异网主卡，且非物联网用户。
 DROP TABLE temp_ldp_ywzk_user_201909;
 CREATE TABLE temp_ldp_ywzk_user_201909 (user_id bigint,product_no varchar(16))     
@@ -856,7 +878,7 @@ where a.avg_arpu-c.arpu>=0.3*a.avg_arpu  and a.avg_dou-c.dou>=0.3*a.avg_dou;
 select count(1) from temp_ldp_4gsj_user_201909;
 640877
  
-------沉默攻坚：	HLW_DW_WTX_DAY_NUM_DT_YYYYMMDD
+------沉默攻坚：两月未通信	HLW_DW_WTX_DAY_NUM_DT_YYYYMMDD
 drop table temp_ldp_cmgj_user_201909;
 create table temp_ldp_cmgj_user_201909
 (user_id  bigint,product_no varchar(14))
