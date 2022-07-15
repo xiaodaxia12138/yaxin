@@ -6,7 +6,7 @@ where month_id=202206
 select product_no,count(1)
 from HLW_DW_ZHIYEJUZHU_YYYYMM 
 where month_id=202206
-group by prodcut_no
+group by product_no
 having count(1)>1
 -- 数据导入分发系统日期格式
 day_id = '${batchNo}' , month_id = '${batchNo?substring(0,6)}' ,year = '${batchNo?substring(0,4)}'
@@ -61,7 +61,7 @@ select distinct a.user_id,a.product_no
 from cqbassdb.dw_user_imei_dt_20211031 a
 inner join cqbassdb.dim_pub_5g_terminfo_tac b on a.tac=b.tac
 
--- 分公司分类统计
+-- 分公司分类统计(包括政企、12582基地、地区代码不详、大数据智能化中心、重庆市区 )
 
 select case when b.county_name in ('南岸','渝中') then '城一'
             when b.county_name in ('渝北','江北','两江新区') then '城二'
@@ -228,14 +228,14 @@ left join default.dim_pub_all_terminfo_tac b on a.tac=b.tac
 where day_id='20191031' and n09  in ('1','6','7','9') 
 group by user_id
 
------终端（5G终端），随时有变，由局方提供。
+-----终端（5G终端）,随时有变,由局方提供。
 
 select distinct imei1,product_no1
 from temp_hlw_5g_imei_dt_jc a 
 where (product_no1 is not null or product_no2 is not null)
 
 
------终端品牌，终端型号
+-----终端品牌,终端型号
 select user_id,
 		TERM_TYPE,  --终端品牌
 		TERM_NAME	--终端型号
@@ -497,7 +497,7 @@ create table temp_0916_1
 ;
 
 insert into table temp_0916_1
-select a.user_id,a.prodcut_no,a.flag,row_number() over() rn
+select a.user_id,a.product_no,a.flag,row_number() over() rn
 from dw_user_gaoweinew_mm_201909 a
 
 
@@ -661,8 +661,8 @@ select user_id from default.dw_bass_yiwang_double_card_mm_yyyymm where month_id 
 
 
 异网双卡营销目标客户输出：
-9月集团异网双卡，9月流量超套5元以内，营销“签约套餐+1元包”
-正常在用且插卡，按9月互斥口径进行目标客户提取
+9月集团异网双卡,9月流量超套5元以内,营销“签约套餐+1元包”
+正常在用且插卡,按9月互斥口径进行目标客户提取
 
 DROP TABLE temp_ywsk_1010_2;
 CREATE TABLE temp_ywsk_1010_2(
@@ -689,7 +689,7 @@ left join (select a.user_id
 			 'gl_cnsbxl70_3','gl_cnsbxl70_6','gl_cnsbxl70_12','gl_cnxf_sll1','gl_cnxf_sll2','gl_cnxf_sll3','gl_cntc_sll',
 			 'gl_qyxf_sll1','gl_qyxf_sll2','gl_qyxf_sll3','gl_qyxf_sll4','gl_qyxf_syy1','gl_qyxf_syy2','gl_qyxf_syy3','gl_qyxf_syy4',
 			 'gl_dllsxb_10y','gl_lldjb_10g6y','gl_lldjb_10g12y')
-			 and (enddate>'2019-10-28' or enddate is null) ) d on b.user_id = d.user_id   -----剔除副卡，承诺类
+			 and (enddate>'2019-10-28' or enddate is null) ) d on b.user_id = d.user_id   -----剔除副卡,承诺类
 left join (select a.user_id 
 			 from default.DW_USER_USEAGE_PRIVILEGE_DT_yyyymmdd a,
 			 (
@@ -842,7 +842,7 @@ select count(user_id),count(distinct user_id) from temp_ldp_dxbh_user_201908;
 
 
 
-----异网主卡用户=当月为异网主卡，且非物联网用户。
+----异网主卡用户=当月为异网主卡,且非物联网用户。
 DROP TABLE temp_ldp_ywzk_user_201909;
 CREATE TABLE temp_ldp_ywzk_user_201909 (user_id bigint,product_no varchar(16))     
 row format delimited fields terminated by ',' stored as textfile ;  
@@ -896,7 +896,7 @@ select count(1) from temp_ldp_cmgj_user_201909;
 
 
 
------4G转化攻坚：上月通信用户，4G终端且0流量	
+-----4G转化攻坚：上月通信用户,4G终端且0流量	
 DROP TABLE temp_ldp_4gzhgj_user_201909;
 CREATE TABLE temp_ldp_4gzhgj_user_201909 (user_id bigint,product_no varchar(16))     
 row format delimited fields terminated by ',' stored as textfile ;  
@@ -921,7 +921,7 @@ select count(1) from temp_ldp_4gzhgj_user_201909;
 
 
 
-----双低：统计月在网， Arpu＜20元且Dou＜100MB，非物联网卡数据卡的用户。
+----双低：统计月在网, Arpu＜20元且Dou＜100MB,非物联网卡数据卡的用户。
 DROP TABLE temp_ldp_sd_user_201909;
 CREATE TABLE temp_ldp_sd_user_201909 (user_id bigint,product_no varchar(16))     
 row format delimited fields terminated by ',' stored as textfile;  
@@ -1052,11 +1052,11 @@ row format delimited fields terminated by ',' stored as textfile ;
  
 insert into table temp_ywsk_czz_2
 
-----企业编码，业务编码
+----企业编码,业务编码
 
 select substr(a.startdate,1,10) op_time,a.subsid user_id
 from default.DWD_SUBS_SPSERVICE_YYYYMMDD a 
-inner join  HLW_DIM_SRJK_YWLX_CODE   b ----临时表，将数据导进去
+inner join  HLW_DIM_SRJK_YWLX_CODE   b ----临时表,将数据导进去
 on a.spid =b.sid1 and a.SPBIZID = b.sid2
 where a.day_id = '${sd_date}'
   and substr(a.startdate,1,10)>='${d_taskid}'
@@ -1236,7 +1236,7 @@ default.dwd_ods_jt_vgdi_71205_yyyymmdd
 HLW_DIM_OPER_CHANNEL_STYLE_${YYYYMMDD}
 HLW_DIM_OPER_CHANNEL_STYLE_YYYYMMDD
 
-----企业编码，业务编码（办理）
+----企业编码,业务编码（办理）
 select '',substr(a.startdate,1,10) op_time,a.subsid user_id,c.oper_code,b.price,b.ywlx,b.yw_name,b.llhl,b.yyhl,'','','','',d.county_id,e.area_id,d.dept_id
 from default.DWD_SUBS_SPSERVICE_YYYYMMDD a 
 inner join  b on a.spid =b.sid1 and a.SPBIZID = b.sid2
@@ -1261,7 +1261,7 @@ cqvgopdb.ST_APP_QYRHB_DIM_CHL_RECEIVE_FDT_
 
 ----激活时间
 DW_BASE_ZNJF_TERM_DEVELOP_DETAIL_DT_YYYYMMDD
-----终端品牌，终端型号，终端销售日期
+----终端品牌,终端型号,终端销售日期
 DW_COMPLETE_AI_CHL_TERM_SALE_DM_NEW_YYYYMMDD 
 
 

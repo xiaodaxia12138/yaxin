@@ -28,7 +28,7 @@ inner join
     and f1 in ('滚动计费','日包-已下线','时包','日包','三日包','月包','周包','定向流量')
 
 ) t2 on t1.operate_code=t2.privsetid
-inner join temp_hlw_dim_oper_channel_type_xiao_20220430 t3 on t1.oper_code=t3.oper_code      -- 最新维表，不管
+inner join temp_hlw_dim_oper_channel_type_xiao_20220430 t3 on t1.oper_code=t3.oper_code      -- 最新维表不管
 left join 
 (
     select distinct a.product_no,a.user_id,            
@@ -90,7 +90,7 @@ inner join
     and f1 in ('滚动计费','日包-已下线','时包','日包','三日包','月包','周包','定向流量')
 
 ) t2 on t1.operate_code=t2.privsetid
-inner join temp_hlw_dim_oper_channel_type_xiao_20220430 t3 on t1.oper_code=t3.oper_code      -- 最新维表，不管
+inner join temp_hlw_dim_oper_channel_type_xiao_20220430 t3 on t1.oper_code=t3.oper_code      -- 最新维表,不管
 left join 
 (
     select distinct a.product_no,a.user_id,
